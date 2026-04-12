@@ -1,0 +1,76 @@
+kind: PRIME_CANON_CORPUS_INDEX_V1
+version: v1
+metadata:
+  object_id: pc.corpus.subject-0001
+  display_name: Subject 0001 corpus index
+  created_at: '2026-04-12T17:01:22Z'
+  updated_at: '2026-04-12T17:01:22Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - freeze-ready
+attributes:
+  identity:
+    corpus_id: pc.corpus.subject-0001
+    subject_slug: subject-0001
+    canonical_home: canon/corpora/subject-0001/index.yaml
+  lineage:
+    source_refs: &id001
+    - pending://subject-0001/source-0001
+    - pending://subject-0001/source-0002
+    source_unit_refs: []
+    reduction_path:
+    - intake
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: medium
+    sufficiency_status: sufficient
+    evidence_class: conversation
+    evidence_ref_count: 2
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: peer
+    actor_class: human
+    risk_tier: medium
+    promotion_tier: draft
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: corpus-index
+    dependency_footprint: []
+    semantic_density: 0.72
+    novelty_state: reframe
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: intake
+    repo_home: canon/corpora/subject-0001/index.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: low
+    route_destination: reduction
+  temporal:
+    status_since: '2026-04-12T17:01:22Z'
+    replay_stability: stable
+    drift_sensitivity: low
+    maturity: governed
+    observed_at: '2026-04-12T17:01:22Z'
+    reduced_at: '2026-04-12T17:01:22Z'
+spec:
+  corpus_id: pc.corpus.subject-0001
+  subject_slug: subject-0001
+  source_refs: *id001
+  source_ordering: chronological
+  intake_scope: Initial live subject bootstrap pending first real source enrollment.
+  source_count: 2
+  compiler_version: prime-canon-intake@1.0.0
+  intake_policy_ref: pc.repo_manifest.main
+  status: open
