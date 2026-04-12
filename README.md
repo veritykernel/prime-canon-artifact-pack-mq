@@ -20,8 +20,7 @@ mkdir -p ~/src/prime-canon
 cd ~/src/prime-canon
 
 # unpack the artifact pack here, then:
-python3 -m pip install --upgrade pyyaml jsonschema
-python3 scripts/validate_pack.py .
+./scripts/bootstrap_python.sh
 ```
 
 ## Canonical object envelope
