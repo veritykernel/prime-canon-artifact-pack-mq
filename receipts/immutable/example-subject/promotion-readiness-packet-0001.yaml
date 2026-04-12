@@ -1,0 +1,106 @@
+kind: PRIME_CANON_PROMOTION_READINESS_PACKET_V1
+version: v1
+metadata:
+  object_id: pc.packet.promotion.example-subject.0001
+  display_name: Promotion readiness packet for state-first canon node
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - freeze-ready
+attributes:
+  identity:
+    corpus_id: pc.corpus.example-subject
+    subject_slug: example-subject
+    canonical_home: receipts/immutable/example-subject/promotion-readiness-packet-0001.yaml
+  lineage:
+    source_refs:
+    - chat://upgrade/2026-04-11#msg-001
+    source_unit_refs:
+    - pc.source_unit.example-subject.0001
+    reduction_path:
+    - promotion
+    derivation_receipt_refs:
+    - pc.receipt.formula.example-subject.0001
+    - pc.receipt.reduction.example-subject.0001-include
+  evidence:
+    burden_level: high
+    sufficiency_status: sufficient
+    evidence_class: computed
+    evidence_ref_count: 4
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.promotion-inspector-agent
+    approval_level: peer
+    actor_class: agent
+    risk_tier: high
+    promotion_tier: governed
+    freeze_class: receipt_locked
+  semantic:
+    domain: prime-canon
+    scope: promotion
+    dependency_footprint: []
+    semantic_density: 0.75
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: promotion
+    repo_home: receipts/immutable/example-subject/promotion-readiness-packet-0001.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: low
+    route_destination: human-review
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: medium
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  packet_id: pc.packet.promotion.example-subject.0001
+  target_refs:
+  - pc.node.example-subject.0001
+  required_gates:
+  - admissibility_pass
+  - jurisdiction_pass
+  - no_open_critical_contradiction
+  - required_receipts_present
+  - replay_manifest_present
+  gate_results:
+  - gate: admissibility_pass
+    status: pass
+    evidence:
+    - pc.receipt.admissibility.example-subject.0001
+  - gate: jurisdiction_pass
+    status: pass
+    evidence:
+    - pc.jurisdiction.human-reviewer
+  - gate: no_open_critical_contradiction
+    status: pass
+    evidence:
+    - pc.contradiction.example-subject.0001
+  - gate: required_receipts_present
+    status: pass
+    evidence:
+    - pc.receipt.formula.example-subject.0001
+    - pc.receipt.reduction.example-subject.0001-include
+  - gate: replay_manifest_present
+    status: pass
+    evidence:
+    - pc.replay.example-subject.0001
+  blockers: []
+  required_reviewer_classes:
+  - human:reviewer
+  blast_radius: high
+  replay_manifest_ref: pc.replay.example-subject.0001
+  ready: true

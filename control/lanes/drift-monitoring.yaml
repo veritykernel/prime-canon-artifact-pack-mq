@@ -1,0 +1,81 @@
+kind: PRIME_CANON_LANE_MANIFEST_V1
+version: v1
+metadata:
+  object_id: pc.lane.drift-monitoring
+  display_name: Drift monitoring lane manifest
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - freeze-ready
+attributes:
+  identity:
+    corpus_id: pc.corpus.control-plane
+    subject_slug: control-plane
+    canonical_home: control/lanes/drift-monitoring.yaml
+  lineage:
+    source_refs:
+    - repo://policy/lanes
+    source_unit_refs: []
+    reduction_path:
+    - governance
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: high
+    sufficiency_status: sufficient
+    evidence_class: artifact
+    evidence_ref_count: 1
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: owner
+    actor_class: human
+    risk_tier: medium
+    promotion_tier: governed
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon-control
+    scope: lane-contract
+    dependency_footprint: []
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: governance
+    repo_home: control/lanes/drift-monitoring.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: medium
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: medium
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  lane_id: drift-monitoring
+  allowed_object_families:
+  - PRIME_CANON_CURRENT_STATE_VIEW_V1
+  - PRIME_CANON_FORMULA_EVAL_RECEIPT_V1
+  required_receipt_kinds: []
+  forbidden_actions:
+  - promote
+  - supersede
+  required_checks:
+  - schema-validation
+  - drift-check
+  mutation_paths:
+  - views/current/**
+  - receipts/immutable/**
+  rollback_strategy: re-run derivation and raise drift alert without mutating canon
+    nodes
+  escalation_policy: escalate critical render or replay drift to freeze gate

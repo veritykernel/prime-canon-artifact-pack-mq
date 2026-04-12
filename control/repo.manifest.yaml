@@ -1,0 +1,98 @@
+kind: PRIME_CANON_REPO_MANIFEST_V1
+version: v1
+metadata:
+  object_id: pc.repo_manifest.main
+  display_name: Prime canon repository manifest
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - control-plane
+  - repo-manifest
+attributes:
+  identity:
+    corpus_id: pc.corpus.control-plane
+    subject_slug: control-plane
+    canonical_home: control/repo.manifest.yaml
+  lineage:
+    source_refs:
+    - repo://self
+    source_unit_refs: []
+    reduction_path:
+    - governance
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: constitutional
+    sufficiency_status: sufficient
+    evidence_class: artifact
+    evidence_ref_count: 1
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: owner
+    actor_class: human
+    risk_tier: high
+    promotion_tier: governed
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon-control
+    scope: repository-enrollment
+    dependency_footprint: []
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: governance
+    repo_home: control/repo.manifest.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: high
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: high
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  repo_id: pc.repo.main
+  repo_name: prime-canon-artifact-pack
+  canon_enabled: true
+  enrolled_surfaces:
+  - canon
+  - control
+  - receipts
+  - replay
+  - views
+  default_formula_profile_ref: pc.formula_profile.core-default
+  default_admissibility_profile_ref: pc.admissibility_profile.core-default
+  jurisdiction_binding_refs:
+  - pc.jurisdiction.human-reviewer
+  - pc.jurisdiction.claim-extractor-agent
+  - pc.jurisdiction.evidence-auditor-agent
+  - pc.jurisdiction.promotion-inspector-agent
+  lane_manifest_refs:
+  - pc.lane.intake
+  - pc.lane.reduction
+  - pc.lane.adjudication
+  - pc.lane.promotion
+  - pc.lane.drift-monitoring
+  render_fail_closed: true
+  federation_mode: disabled
+  canonical_branches:
+  - main
+  - canon-experiments/*
+  protected_paths:
+  - canon/nodes/**
+  - views/current/**
+  - receipts/immutable/**
+  - control/**
+  - schemas/**

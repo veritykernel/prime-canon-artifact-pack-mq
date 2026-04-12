@@ -1,0 +1,76 @@
+kind: PRIME_CANON_EVIDENCE_LINK_V1
+version: v1
+metadata:
+  object_id: pc.evidence_link.example-subject.0000
+  display_name: Evidence link for legacy claim
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - freeze-ready
+attributes:
+  identity:
+    corpus_id: pc.corpus.example-subject
+    subject_slug: example-subject
+    canonical_home: canon/evidence_links/example-subject/link-0000.yaml
+  lineage:
+    source_refs:
+    - chat://legacy/2026-03-01#msg-008
+    source_unit_refs:
+    - pc.source_unit.example-subject.0000
+    reduction_path:
+    - reduction
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: medium
+    sufficiency_status: sufficient
+    evidence_class: direct_quote
+    evidence_ref_count: 1
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.evidence-auditor-agent
+    approval_level: peer
+    actor_class: agent
+    risk_tier: low
+    promotion_tier: draft
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: legacy-model
+    dependency_footprint: []
+    semantic_density: 0.5
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: reduction
+    repo_home: canon/evidence_links/example-subject/link-0000.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: low
+    route_destination: admissibility
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: low
+    maturity: working
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  link_id: pc.evidence_link.example-subject.0000
+  claim_ref: pc.claim.example-subject.0000
+  evidence_ref: pc.source_unit.example-subject.0000
+  evidence_class: direct_quote
+  support_type: supports
+  support_strength: medium
+  source_trust_class: medium
+  admissibility_weight: 0.62
+  replayable: true

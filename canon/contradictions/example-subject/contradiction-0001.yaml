@@ -1,0 +1,81 @@
+kind: PRIME_CANON_CONTRADICTION_BUNDLE_V1
+version: v1
+metadata:
+  object_id: pc.contradiction.example-subject.0001
+  display_name: Contradiction between text-first and state-first canon definitions
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - freeze-ready
+attributes:
+  identity:
+    corpus_id: pc.corpus.example-subject
+    subject_slug: example-subject
+    canonical_home: canon/contradictions/example-subject/contradiction-0001.yaml
+  lineage:
+    source_refs:
+    - chat://legacy/2026-03-01#msg-008
+    - chat://upgrade/2026-04-11#msg-001
+    source_unit_refs:
+    - pc.source_unit.example-subject.0000
+    - pc.source_unit.example-subject.0001
+    reduction_path:
+    - adjudication
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: high
+    sufficiency_status: contested
+    evidence_class: computed
+    evidence_ref_count: 2
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: domain
+    actor_class: human
+    risk_tier: high
+    promotion_tier: governed
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: thesis-definition
+    dependency_footprint: []
+    semantic_density: 0.88
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: adjudication
+    repo_home: canon/contradictions/example-subject/contradiction-0001.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: medium
+    route_destination: supersession
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: high
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  contradiction_id: pc.contradiction.example-subject.0001
+  object_refs:
+  - pc.claim.example-subject.0000
+  - pc.claim.example-subject.0001
+  conflict_type: definition
+  severity: high
+  conflict_scope: thesis-definition
+  open_questions:
+  - Is prose the source of truth or only a projection from governed state?
+  - Can text-first canon survive as a historical projection without retaining authority?
+  blocking: false
+  adjudication_lane: adjudication

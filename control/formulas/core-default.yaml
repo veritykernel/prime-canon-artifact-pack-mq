@@ -1,0 +1,158 @@
+kind: PRIME_CANON_FORMULA_PROFILE_V1
+version: v1
+metadata:
+  object_id: pc.formula_profile.core-default
+  display_name: Prime canon core default formula profile
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - control-plane
+  - formula-profile
+attributes:
+  identity:
+    corpus_id: pc.corpus.control-plane
+    subject_slug: control-plane
+    canonical_home: control/formulas/core-default.yaml
+  lineage:
+    source_refs:
+    - design://prime-canon-upgrade
+    source_unit_refs: []
+    reduction_path:
+    - governance
+    - freeze
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: constitutional
+    sufficiency_status: sufficient
+    evidence_class: computed
+    evidence_ref_count: 1
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: owner
+    actor_class: human
+    risk_tier: high
+    promotion_tier: governed
+    freeze_class: immutable
+  semantic:
+    domain: prime-canon-control
+    scope: formula-profile
+    dependency_footprint: []
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: governance
+    repo_home: control/formulas/core-default.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: medium
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: high
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  profile_id: pc.formula_profile.core-default
+  objective: Promote high-leverage, high-evidence, low-ambiguity claims while blocking
+    unstable or authority-invalid transitions.
+  measurements:
+  - name: evidence_strength
+    expression: min(1.0, evidence_ref_count / 3.0)
+    description: How well supported the claim is by linked evidence.
+    output_range:
+      min: 0.0
+      max: 1.0
+  - name: source_diversity
+    expression: min(1.0, unique_source_refs / 3.0)
+    description: How many distinct sources support the claim.
+    output_range:
+      min: 0.0
+      max: 1.0
+  - name: novelty_score
+    expression: 1.0 - duplication_overlap
+    description: How much new information the claim adds relative to current canon.
+    output_range:
+      min: 0.0
+      max: 1.0
+  - name: downstream_leverage
+    expression: estimated_reuse_factor
+    description: Expected reuse across future corpus compiles, sections, and agents.
+    output_range:
+      min: 0.0
+      max: 1.0
+  - name: ambiguity_penalty
+    expression: 'open_ambiguity_count > 0 ? min(1.0, open_ambiguity_count / 2.0) :
+      0.0'
+    description: Penalty for unresolved ambiguity attached to the claim.
+    output_range:
+      min: 0.0
+      max: 1.0
+  - name: conflict_severity
+    expression: max_contradiction_severity_normalized
+    description: Highest contradiction severity touching the target.
+    output_range:
+      min: 0.0
+      max: 1.0
+  composites:
+  - name: inclusion_score
+    output_kind: score
+    expression: 0.24*evidence_strength + 0.16*source_diversity + 0.20*downstream_leverage
+      + 0.14*semantic_density + 0.14*novelty_score - 0.06*ambiguity_penalty - 0.06*duplication_overlap
+    description: Main scalar for triaging candidate inclusion into governed canon.
+    threshold_bands:
+    - label: promote_candidate
+      min: 0.72
+      max: 1.0
+    - label: defer
+      min: 0.45
+      max: 0.7199
+    - label: reject
+      min: 0.0
+      max: 0.4499
+  - name: promotion_readiness_score
+    output_kind: score
+    expression: 0.35*inclusion_score + 0.25*(1.0-conflict_severity) + 0.20*evidence_strength
+      + 0.20*source_diversity
+    description: Secondary score used only after hard gates pass.
+    threshold_bands:
+    - label: ready
+      min: 0.78
+      max: 1.0
+    - label: needs_review
+      min: 0.55
+      max: 0.7799
+    - label: not_ready
+      min: 0.0
+      max: 0.5499
+  hard_gates:
+  - name: admissibility_pass
+    expression: admissibility.pass_fail in ['pass','provisional']
+    blocking: true
+    failure_message: Claim failed admissibility profile.
+  - name: jurisdiction_pass
+    expression: actor_action in allowed_actions
+    blocking: true
+    failure_message: Current actor lacks lawful jurisdiction.
+  - name: no_open_critical_contradiction
+    expression: open_critical_contradictions == 0
+    blocking: true
+    failure_message: Critical contradiction must be adjudicated before promotion.
+  - name: required_receipts_present
+    expression: has_formula_eval_receipt and has_reduction_decision_receipt and has_replay_manifest
+    blocking: true
+    failure_message: Promotion bundle is missing mandatory receipts.
+  expiry_policy:
+    expires_when_inputs_change: true
+    max_age_days: 30

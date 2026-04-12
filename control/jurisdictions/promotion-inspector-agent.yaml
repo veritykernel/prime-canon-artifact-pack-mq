@@ -1,0 +1,90 @@
+kind: PRIME_CANON_JURISDICTION_BINDING_V1
+version: v1
+metadata:
+  object_id: pc.jurisdiction.promotion-inspector-agent
+  display_name: Promotion inspector agent jurisdiction
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - freeze-ready
+attributes:
+  identity:
+    corpus_id: pc.corpus.control-plane
+    subject_slug: control-plane
+    canonical_home: control/jurisdictions/promotion-inspector-agent.yaml
+  lineage:
+    source_refs:
+    - repo://policy/jurisdictions
+    source_unit_refs: []
+    reduction_path:
+    - governance
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: high
+    sufficiency_status: sufficient
+    evidence_class: artifact
+    evidence_ref_count: 1
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: owner
+    actor_class: human
+    risk_tier: high
+    promotion_tier: governed
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon-control
+    scope: jurisdiction
+    dependency_footprint: []
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: governance
+    repo_home: control/jurisdictions/promotion-inspector-agent.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: medium
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: medium
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  binding_id: pc.jurisdiction.promotion-inspector-agent
+  actor_class: agent
+  actor_ref: agent:promotion-inspector
+  object_family: PRIME_CANON_PROMOTION_READINESS_PACKET_V1
+  allowed_actions:
+  - observe
+  - propose
+  - write
+  - inspect
+  - route
+  forbidden_actions:
+  - promote
+  - archive
+  - supersede
+  - reject
+  allowed_lanes:
+  - promotion
+  required_receipt_kinds:
+  - PRIME_CANON_FORMULA_EVAL_RECEIPT_V1
+  - PRIME_CANON_REDUCTION_DECISION_RECEIPT_V1
+  - PRIME_CANON_REPLAY_MANIFEST_V1
+  escalation_targets:
+  - human:reviewer
+  review_burden: high
+  repo_boundary_behavior: local_only
+  risk_ceiling: high

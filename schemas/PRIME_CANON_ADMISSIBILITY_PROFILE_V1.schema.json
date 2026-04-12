@@ -1,0 +1,602 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/prime-canon/schemas/PRIME_CANON_ADMISSIBILITY_PROFILE_V1.schema.json",
+  "title": "PRIME_CANON_ADMISSIBILITY_PROFILE_V1",
+  "description": "Admissibility burden profile used before canon promotion.",
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "metadata",
+    "attributes",
+    "spec"
+  ],
+  "properties": {
+    "kind": {
+      "const": "PRIME_CANON_ADMISSIBILITY_PROFILE_V1"
+    },
+    "version": {
+      "const": "v1"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "object_id",
+        "display_name",
+        "created_at",
+        "created_by"
+      ],
+      "properties": {
+        "object_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:/-]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owners": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "attributes": {
+      "type": "object",
+      "required": [
+        "identity",
+        "lineage",
+        "evidence",
+        "governance",
+        "semantic",
+        "relational",
+        "operational",
+        "temporal"
+      ],
+      "properties": {
+        "identity": {
+          "type": "object",
+          "required": [
+            "corpus_id",
+            "subject_slug",
+            "canonical_home"
+          ],
+          "properties": {
+            "corpus_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/-]+$"
+            },
+            "subject_slug": {
+              "type": "string",
+              "minLength": 1
+            },
+            "canonical_home": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "lineage": {
+          "type": "object",
+          "required": [
+            "source_refs"
+          ],
+          "properties": {
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "default": []
+            },
+            "source_unit_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            },
+            "reduction_path": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "default": []
+            },
+            "derivation_receipt_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false
+        },
+        "evidence": {
+          "type": "object",
+          "required": [
+            "burden_level",
+            "sufficiency_status"
+          ],
+          "properties": {
+            "evidence_class": {
+              "type": "string",
+              "enum": [
+                "none",
+                "conversation",
+                "artifact",
+                "multi_source",
+                "external",
+                "computed",
+                "direct_quote",
+                "paraphrase",
+                "code",
+                "issue",
+                "pr",
+                "derived_metric",
+                "human_assertion"
+              ]
+            },
+            "evidence_ref_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "burden_level": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "constitutional"
+              ]
+            },
+            "sufficiency_status": {
+              "type": "string",
+              "enum": [
+                "unscored",
+                "insufficient",
+                "provisional",
+                "sufficient",
+                "contested"
+              ]
+            },
+            "replayability_class": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "governance": {
+          "type": "object",
+          "required": [
+            "jurisdiction_ref",
+            "approval_level",
+            "actor_class",
+            "risk_tier",
+            "promotion_tier",
+            "freeze_class"
+          ],
+          "properties": {
+            "jurisdiction_ref": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/-]+$"
+            },
+            "approval_level": {
+              "type": "string",
+              "enum": [
+                "none",
+                "peer",
+                "domain",
+                "owner",
+                "court"
+              ]
+            },
+            "actor_class": {
+              "type": "string",
+              "enum": [
+                "human",
+                "agent",
+                "compiler",
+                "ci",
+                "service"
+              ]
+            },
+            "risk_tier": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "critical"
+              ]
+            },
+            "promotion_tier": {
+              "type": "string",
+              "enum": [
+                "none",
+                "draft",
+                "candidate",
+                "governed",
+                "promoted",
+                "frozen",
+                "historical",
+                "superseded",
+                "rejected"
+              ]
+            },
+            "freeze_class": {
+              "type": "string",
+              "enum": [
+                "mutable",
+                "reviewed",
+                "receipt_locked",
+                "immutable"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "semantic": {
+          "type": "object",
+          "required": [
+            "domain",
+            "scope"
+          ],
+          "properties": {
+            "domain": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scope": {
+              "type": "string",
+              "minLength": 1
+            },
+            "claim_type": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dependency_footprint": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            },
+            "semantic_density": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "novelty_state": {
+              "type": "string",
+              "enum": [
+                "unknown",
+                "novel",
+                "reframe",
+                "duplicate",
+                "merge_candidate"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "relational": {
+          "type": "object",
+          "properties": {
+            "contradiction_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            },
+            "supersedes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            },
+            "superseded_by": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            },
+            "depends_on": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            },
+            "section_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            },
+            "cluster_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false
+        },
+        "operational": {
+          "type": "object",
+          "required": [
+            "lane_ref",
+            "repo_home",
+            "active_state"
+          ],
+          "properties": {
+            "lane_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "repo_home": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mirror_permissions": {
+              "type": "string",
+              "enum": [
+                "none",
+                "local_only",
+                "federated_read",
+                "federated_write"
+              ]
+            },
+            "active_state": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "quarantined",
+                "retired"
+              ]
+            },
+            "maintenance_burden": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "route_destination": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "temporal": {
+          "type": "object",
+          "required": [
+            "status_since",
+            "replay_stability",
+            "drift_sensitivity",
+            "maturity"
+          ],
+          "properties": {
+            "observed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "reduced_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status_since": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "replay_stability": {
+              "type": "string",
+              "enum": [
+                "unstable",
+                "bounded",
+                "stable"
+              ]
+            },
+            "drift_sensitivity": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "maturity": {
+              "type": "string",
+              "enum": [
+                "seed",
+                "working",
+                "governed",
+                "stable",
+                "frozen"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "spec": {
+      "type": "object",
+      "required": [
+        "profile_id",
+        "burden_classes",
+        "override_policy",
+        "provisional_policy"
+      ],
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:/-]+$"
+        },
+        "burden_classes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "min_evidence_links",
+              "min_source_diversity",
+              "allowed_evidence_classes",
+              "requires_replayability",
+              "block_on_open_critical_contradictions"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "constitutional"
+                ]
+              },
+              "min_evidence_links": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "min_source_diversity": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "allowed_evidence_classes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "requires_replayability": {
+                "type": "boolean"
+              },
+              "block_on_open_critical_contradictions": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "override_policy": {
+          "type": "object",
+          "required": [
+            "allowed",
+            "required_approval_level",
+            "max_risk_tier"
+          ],
+          "properties": {
+            "allowed": {
+              "type": "boolean"
+            },
+            "required_approval_level": {
+              "type": "string",
+              "enum": [
+                "none",
+                "peer",
+                "domain",
+                "owner",
+                "court"
+              ]
+            },
+            "max_risk_tier": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "critical"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "provisional_policy": {
+          "type": "object",
+          "required": [
+            "allowed",
+            "max_age_days",
+            "required_badges"
+          ],
+          "properties": {
+            "allowed": {
+              "type": "boolean"
+            },
+            "max_age_days": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "required_badges": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

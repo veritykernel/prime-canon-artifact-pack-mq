@@ -1,0 +1,85 @@
+kind: PRIME_CANON_CURRENT_STATE_VIEW_V1
+version: v1
+metadata:
+  object_id: pc.view.current.example-subject
+  display_name: Current state view for example subject
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - freeze-ready
+attributes:
+  identity:
+    corpus_id: pc.corpus.example-subject
+    subject_slug: example-subject
+    canonical_home: views/current/example-subject.yaml
+  lineage:
+    source_refs:
+    - chat://upgrade/2026-04-11#msg-001
+    source_unit_refs:
+    - pc.source_unit.example-subject.0001
+    reduction_path:
+    - promotion
+    - view-compile
+    derivation_receipt_refs:
+    - pc.receipt.reduction.example-subject.0001-promote
+    - pc.replay.example-subject.0001
+  evidence:
+    burden_level: high
+    sufficiency_status: sufficient
+    evidence_class: computed
+    evidence_ref_count: 2
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: owner
+    actor_class: human
+    risk_tier: high
+    promotion_tier: promoted
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: current-state
+    dependency_footprint: []
+    semantic_density: 0.7
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: promotion
+    repo_home: views/current/example-subject.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: low
+    route_destination: render
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: high
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  view_id: pc.view.current.example-subject
+  scope_ref: pc.corpus.example-subject
+  active_node_refs:
+  - pc.node.example-subject.0001
+  active_edge_refs:
+  - pc.edge.example-subject.0001
+  active_contradiction_refs: []
+  unresolved_blocker_refs: []
+  view_hash: 29e73d9f0b0bc9326e9200821cec180f7898b2d7372594b92a75aa6fcb2717cf
+  derivation_receipt_refs:
+  - pc.receipt.reduction.example-subject.0001-promote
+  - pc.replay.example-subject.0001
+  rendered_projection_refs:
+  - views/rendered/example-subject.md
+  generated_at: '2026-04-12T00:00:00Z'

@@ -1,0 +1,263 @@
+kind: PRIME_CANON_ATTRIBUTE_DICTIONARY_V1
+version: v1
+metadata:
+  object_id: pc.attribute_dictionary.core-v1
+  display_name: Prime canon core attribute dictionary
+  created_at: '2026-04-12T00:00:00Z'
+  updated_at: '2026-04-12T00:00:00Z'
+  created_by: human:architect
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - control-plane
+  - attribute-dictionary
+attributes:
+  identity:
+    corpus_id: pc.corpus.control-plane
+    subject_slug: control-plane
+    canonical_home: control/attributes/core-attribute-dictionary.yaml
+  lineage:
+    source_refs:
+    - design://prime-canon-upgrade
+    source_unit_refs: []
+    reduction_path:
+    - governance
+    - freeze
+    derivation_receipt_refs: []
+  evidence:
+    burden_level: constitutional
+    sufficiency_status: sufficient
+    evidence_class: artifact
+    evidence_ref_count: 1
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: owner
+    actor_class: human
+    risk_tier: high
+    promotion_tier: governed
+    freeze_class: immutable
+  semantic:
+    domain: prime-canon-control
+    scope: attribute-model
+    dependency_footprint: []
+    novelty_state: unknown
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on: []
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: governance
+    repo_home: control/attributes/core-attribute-dictionary.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: medium
+  temporal:
+    status_since: '2026-04-12T00:00:00Z'
+    replay_stability: stable
+    drift_sensitivity: medium
+    maturity: stable
+    observed_at: '2026-04-11T00:00:00Z'
+    reduced_at: '2026-04-12T00:00:00Z'
+spec:
+  dictionary_id: pc.attribute_dictionary.core-v1
+  bands:
+  - band_name: identity
+    description: Stable identity and canonical home for every object.
+    attributes:
+    - name: corpus_id
+      type: string
+      required_in:
+      - ALL
+      inheritance_mode: propagate
+      mutable: false
+      description: Subject or control corpus key.
+    - name: subject_slug
+      type: string
+      required_in:
+      - ALL
+      inheritance_mode: propagate
+      mutable: false
+      description: Human-meaningful scope slug.
+    - name: canonical_home
+      type: path
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Canonical repo path for the object file.
+  - band_name: lineage
+    description: Where an object came from and which receipts produced it.
+    attributes:
+    - name: source_refs
+      type: string[]
+      required_in:
+      - ALL
+      inheritance_mode: propagate
+      mutable: true
+      description: Original ingress references.
+    - name: source_unit_refs
+      type: string[]
+      required_in:
+      - PRIME_CANON_CANDIDATE_CLAIM_V1
+      - PRIME_CANON_NODE_V1
+      inheritance_mode: propagate
+      mutable: true
+      description: Normalized source units used to form the object.
+    - name: derivation_receipt_refs
+      type: string[]
+      required_in:
+      - DERIVED
+      inheritance_mode: propagate
+      mutable: true
+      description: Receipts that derive the current object state.
+  - band_name: evidence
+    description: Evidence burden and sufficiency signals used by admissibility and
+      promotion.
+    attributes:
+    - name: burden_level
+      type: enum
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Low, medium, high, or constitutional burden.
+    - name: sufficiency_status
+      type: enum
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Current evidence sufficiency state.
+    - name: replayability_class
+      type: enum
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: How replayable the evidence basis is.
+  - band_name: governance
+    description: Authority, review, and promotion state.
+    attributes:
+    - name: jurisdiction_ref
+      type: string
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Binding that authorizes the current actor surface.
+    - name: risk_tier
+      type: enum
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Operational blast-radius tier.
+    - name: promotion_tier
+      type: enum
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Draft/candidate/governed/promoted/frozen/historical state band.
+  - band_name: semantic
+    description: What the object means and how dense or novel it is.
+    attributes:
+    - name: domain
+      type: string
+      required_in:
+      - ALL
+      inheritance_mode: propagate
+      mutable: true
+      description: Primary semantic domain.
+    - name: scope
+      type: string
+      required_in:
+      - ALL
+      inheritance_mode: propagate
+      mutable: true
+      description: Subject or section scope.
+    - name: semantic_density
+      type: float
+      required_in:
+      - PRIME_CANON_CANDIDATE_CLAIM_V1
+      - PRIME_CANON_NODE_V1
+      inheritance_mode: recompute
+      mutable: true
+      description: Compression value per unit of text.
+  - band_name: relational
+    description: Conflict, supersession, and dependency edges.
+    attributes:
+    - name: contradiction_refs
+      type: string[]
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Active contradiction bundles touching this object.
+    - name: supersedes
+      type: string[]
+      required_in:
+      - ALL
+      inheritance_mode: propagate
+      mutable: true
+      description: Objects this object supersedes.
+    - name: depends_on
+      type: string[]
+      required_in:
+      - ALL
+      inheritance_mode: propagate
+      mutable: true
+      description: Objects or sections this object depends on.
+  - band_name: operational
+    description: Routing and repo-runtime placement.
+    attributes:
+    - name: lane_ref
+      type: string
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Current operational lane.
+    - name: repo_home
+      type: path
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Physical path in the repository.
+    - name: route_destination
+      type: string
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Next lane or queue destination.
+  - band_name: temporal
+    description: Time and stability semantics for replay and drift.
+    attributes:
+    - name: status_since
+      type: datetime
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Time when the current state became active.
+    - name: replay_stability
+      type: enum
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Unstable/bounded/stable replay class.
+    - name: maturity
+      type: enum
+      required_in:
+      - ALL
+      inheritance_mode: recompute
+      mutable: true
+      description: Seed/working/governed/stable/frozen lifecycle maturity.
