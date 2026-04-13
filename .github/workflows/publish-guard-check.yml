@@ -1,0 +1,21 @@
+name: publish-guard-check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - cycle-2/**
+
+jobs:
+  publish-guard-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run publish guard usage check
+        run: |
+          export PYTHONDONTWRITEBYTECODE=1
+          python3 scripts/check_publish_guard_usage.py .
