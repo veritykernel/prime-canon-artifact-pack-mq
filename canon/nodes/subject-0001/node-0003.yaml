@@ -1,0 +1,88 @@
+kind: PRIME_CANON_NODE_V1
+version: v1
+metadata:
+  object_id: pc.canon_node.subject-0001.0003
+  display_name: subject-0001 canon node 0003
+  created_at: '2026-04-13T18:14:43Z'
+  updated_at: '2026-04-13T18:14:43Z'
+  created_by: compiler:promotion-lane-builder@1.0.0
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - subject-0001
+  - canon-node
+  - promoted
+attributes:
+  identity:
+    corpus_id: pc.corpus.subject-0001
+    subject_slug: subject-0001
+    canonical_home: canon/nodes/subject-0001/node-0003.yaml
+  lineage:
+    source_refs:
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-003
+    source_unit_refs:
+    - pc.source_unit.subject-0001.0003
+    reduction_path:
+    - intake
+    - candidate_claim_extraction
+    - promotion_lane
+    - canon_node
+    derivation_receipt_refs:
+    - pc.promotion_readiness.subject-0001.packet
+    - pc.reduction_receipt.subject-0001.promotion-readiness
+    - pc.replay_manifest.subject-0001.promotion-readiness
+    - pc.reduction_receipt.subject-0001.promote-0003
+  evidence:
+    evidence_class: direct_quote
+    evidence_ref_count: 1
+    burden_level: medium
+    sufficiency_status: sufficient
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: peer
+    actor_class: compiler
+    risk_tier: medium
+    promotion_tier: promoted
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: promoted-canon
+    claim_type: thesis
+    dependency_footprint: []
+    semantic_density: 0.88
+    novelty_state: novel
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on:
+    - pc.candidate_claim.subject-0001.0003
+    - pc.evidence_link.subject-0001.0003
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: promotion-lane
+    repo_home: canon/nodes/subject-0001/node-0003.yaml
+    active_state: active
+    mirror_permissions: local_only
+    maintenance_burden: low
+    route_destination: current-state-view
+  temporal:
+    observed_at: '2026-04-13T04:37:00Z'
+    reduced_at: '2026-04-13T18:14:43Z'
+    status_since: '2026-04-13T18:14:43Z'
+    replay_stability: stable
+    drift_sensitivity: medium
+    maturity: working
+spec:
+  canon_node_id: pc.canon_node.subject-0001.0003
+  originating_claim_ref: pc.candidate_claim.subject-0001.0003
+  canonical_body: The repository is an operational control plane.
+  state: promoted
+  section_memberships: []
+  active_projection_flags:
+  - machine_readable
+  confidence: 0.98
+  promotion_receipt_ref: pc.reduction_receipt.subject-0001.promote-0003

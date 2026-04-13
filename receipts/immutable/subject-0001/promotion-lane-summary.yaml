@@ -1,0 +1,117 @@
+kind: PRIME_CANON_REDUCTION_DECISION_RECEIPT_V1
+version: v1
+metadata:
+  object_id: pc.reduction_receipt.subject-0001.promotion-lane
+  display_name: subject-0001 promotion lane summary
+  created_at: '2026-04-13T18:14:43Z'
+  updated_at: '2026-04-13T18:14:43Z'
+  created_by: compiler:promotion-lane-builder@1.0.0
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - subject-0001
+  - promotion
+  - summary
+attributes:
+  identity:
+    corpus_id: pc.corpus.subject-0001
+    subject_slug: subject-0001
+    canonical_home: receipts/immutable/subject-0001/promotion-lane-summary.yaml
+  lineage:
+    source_refs:
+    - chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-002
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-003
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-004
+    source_unit_refs:
+    - pc.source_unit.subject-0001.0001
+    - pc.source_unit.subject-0001.0002
+    - pc.source_unit.subject-0001.0003
+    - pc.source_unit.subject-0001.0004
+    - pc.source_unit.subject-0001.0005
+    reduction_path:
+    - promotion_lane
+    - summary_receipt
+    derivation_receipt_refs:
+    - pc.reduction_receipt.subject-0001.promote-0001
+    - pc.reduction_receipt.subject-0001.promote-0002
+    - pc.reduction_receipt.subject-0001.promote-0003
+    - pc.reduction_receipt.subject-0001.promote-0004
+    - pc.reduction_receipt.subject-0001.promote-0005
+    - pc.promotion_readiness.subject-0001.packet
+    - pc.reduction_receipt.subject-0001.promotion-readiness
+    - pc.replay_manifest.subject-0001.promotion-readiness
+  evidence:
+    burden_level: medium
+    sufficiency_status: sufficient
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: peer
+    actor_class: compiler
+    risk_tier: medium
+    promotion_tier: promoted
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: promotion-lane
+  relational:
+    depends_on:
+    - pc.candidate_claim.subject-0001.0001
+    - pc.candidate_claim.subject-0001.0002
+    - pc.candidate_claim.subject-0001.0003
+    - pc.candidate_claim.subject-0001.0004
+    - pc.candidate_claim.subject-0001.0005
+    - pc.canon_node.subject-0001.0001
+    - pc.canon_node.subject-0001.0002
+    - pc.canon_node.subject-0001.0003
+    - pc.canon_node.subject-0001.0004
+    - pc.canon_node.subject-0001.0005
+    - pc.current_state_view.subject-0001.v1
+    cluster_refs: []
+    section_refs: []
+  operational:
+    lane_ref: promotion-lane
+    repo_home: receipts/immutable/subject-0001/promotion-lane-summary.yaml
+    active_state: active
+    mirror_permissions: local_only
+    route_destination: render-projection
+  temporal:
+    status_since: '2026-04-13T18:14:43Z'
+    replay_stability: stable
+    drift_sensitivity: low
+    maturity: working
+    reduced_at: '2026-04-13T18:14:43Z'
+spec:
+  decision_receipt_id: pc.reduction_receipt.subject-0001.promotion-lane
+  target_ref: pc.current_state_view.subject-0001.v1
+  decision_type: promote
+  deciding_surface: compiler
+  rationale: promoted 5 ready candidate claims into canon nodes and generated current
+    state view pc.current_state_view.subject-0001.v1
+  cited_receipt_refs:
+  - pc.reduction_receipt.subject-0001.promote-0001
+  - pc.reduction_receipt.subject-0001.promote-0002
+  - pc.reduction_receipt.subject-0001.promote-0003
+  - pc.reduction_receipt.subject-0001.promote-0004
+  - pc.reduction_receipt.subject-0001.promote-0005
+  - pc.promotion_readiness.subject-0001.packet
+  - pc.reduction_receipt.subject-0001.promotion-readiness
+  cited_object_refs:
+  - pc.candidate_claim.subject-0001.0001
+  - pc.candidate_claim.subject-0001.0002
+  - pc.candidate_claim.subject-0001.0003
+  - pc.candidate_claim.subject-0001.0004
+  - pc.candidate_claim.subject-0001.0005
+  - pc.canon_node.subject-0001.0001
+  - pc.canon_node.subject-0001.0002
+  - pc.canon_node.subject-0001.0003
+  - pc.canon_node.subject-0001.0004
+  - pc.canon_node.subject-0001.0005
+  - pc.current_state_view.subject-0001.v1
+  - pc.replay_manifest.subject-0001.promotion-readiness
+  jurisdiction_ref: pc.jurisdiction.human-reviewer
+  reviewer_refs: []
+  blocker_state: none
+  route_outcome: promotion_lane

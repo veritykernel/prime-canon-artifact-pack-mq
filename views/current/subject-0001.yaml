@@ -1,0 +1,111 @@
+kind: PRIME_CANON_CURRENT_STATE_VIEW_V1
+version: v1
+metadata:
+  object_id: pc.current_state_view.subject-0001.v1
+  display_name: subject-0001 current state view
+  created_at: '2026-04-13T18:14:43Z'
+  updated_at: '2026-04-13T18:14:43Z'
+  created_by: compiler:promotion-lane-builder@1.0.0
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - subject-0001
+  - current-state-view
+  - promoted
+attributes:
+  identity:
+    corpus_id: pc.corpus.subject-0001
+    subject_slug: subject-0001
+    canonical_home: views/current/subject-0001.yaml
+  lineage:
+    source_refs:
+    - chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-002
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-003
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-004
+    source_unit_refs:
+    - pc.source_unit.subject-0001.0001
+    - pc.source_unit.subject-0001.0002
+    - pc.source_unit.subject-0001.0003
+    - pc.source_unit.subject-0001.0004
+    - pc.source_unit.subject-0001.0005
+    reduction_path:
+    - promotion_lane
+    - current_state_view
+    derivation_receipt_refs:
+    - pc.reduction_receipt.subject-0001.promote-0001
+    - pc.reduction_receipt.subject-0001.promote-0002
+    - pc.reduction_receipt.subject-0001.promote-0003
+    - pc.reduction_receipt.subject-0001.promote-0004
+    - pc.reduction_receipt.subject-0001.promote-0005
+    - pc.promotion_readiness.subject-0001.packet
+    - pc.reduction_receipt.subject-0001.promotion-readiness
+    - pc.replay_manifest.subject-0001.promotion-readiness
+  evidence:
+    burden_level: medium
+    sufficiency_status: sufficient
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: peer
+    actor_class: compiler
+    risk_tier: medium
+    promotion_tier: promoted
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: current-state-view
+  relational:
+    depends_on:
+    - pc.canon_node.subject-0001.0001
+    - pc.canon_node.subject-0001.0002
+    - pc.canon_node.subject-0001.0003
+    - pc.canon_node.subject-0001.0004
+    - pc.canon_node.subject-0001.0005
+    - pc.reduction_receipt.subject-0001.promote-0001
+    - pc.reduction_receipt.subject-0001.promote-0002
+    - pc.reduction_receipt.subject-0001.promote-0003
+    - pc.reduction_receipt.subject-0001.promote-0004
+    - pc.reduction_receipt.subject-0001.promote-0005
+    - pc.promotion_readiness.subject-0001.packet
+    - pc.reduction_receipt.subject-0001.promotion-readiness
+    - pc.replay_manifest.subject-0001.promotion-readiness
+    cluster_refs: []
+    section_refs: []
+  operational:
+    lane_ref: promotion-lane
+    repo_home: views/current/subject-0001.yaml
+    active_state: active
+    mirror_permissions: local_only
+    route_destination: render-projection
+  temporal:
+    status_since: '2026-04-13T18:14:43Z'
+    replay_stability: stable
+    drift_sensitivity: low
+    maturity: working
+    reduced_at: '2026-04-13T18:14:43Z'
+spec:
+  view_id: pc.current_state_view.subject-0001.v1
+  scope_ref: pc.corpus.subject-0001
+  active_node_refs:
+  - pc.canon_node.subject-0001.0001
+  - pc.canon_node.subject-0001.0002
+  - pc.canon_node.subject-0001.0003
+  - pc.canon_node.subject-0001.0004
+  - pc.canon_node.subject-0001.0005
+  active_edge_refs: []
+  active_contradiction_refs: []
+  unresolved_blocker_refs: []
+  view_hash: 61eeab136ddf06a6620d82901400036f824e5e981ac1f2812af518a9ff88f3dd
+  derivation_receipt_refs:
+  - pc.reduction_receipt.subject-0001.promote-0001
+  - pc.reduction_receipt.subject-0001.promote-0002
+  - pc.reduction_receipt.subject-0001.promote-0003
+  - pc.reduction_receipt.subject-0001.promote-0004
+  - pc.reduction_receipt.subject-0001.promote-0005
+  - pc.promotion_readiness.subject-0001.packet
+  - pc.reduction_receipt.subject-0001.promotion-readiness
+  - pc.replay_manifest.subject-0001.promotion-readiness
+  rendered_projection_refs: []
+  generated_at: '2026-04-13T18:14:43Z'
