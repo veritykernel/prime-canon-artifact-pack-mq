@@ -1,0 +1,93 @@
+kind: PRIME_CANON_ADMISSIBILITY_DECISION_V1
+version: v1
+metadata:
+  object_id: pc.admissibility_decision.subject-0001.0004
+  display_name: subject-0001 admissibility decision 0004
+  created_at: '2026-04-13T12:10:17Z'
+  updated_at: '2026-04-13T12:10:17Z'
+  created_by: compiler:admissibility-builder@1.0.1
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - subject-0001
+  - admissibility
+  - first-pass
+attributes:
+  identity:
+    corpus_id: pc.corpus.subject-0001
+    subject_slug: subject-0001
+    canonical_home: receipts/immutable/subject-0001/admissibility-0004.yaml
+  lineage:
+    source_refs:
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-004
+    source_unit_refs:
+    - pc.source_unit.subject-0001.0004
+    reduction_path:
+    - intake
+    - candidate_claim_extraction
+    - evidence_link_build
+    - admissibility_decision
+    derivation_receipt_refs:
+    - pc.evidence_link.subject-0001.0004
+  evidence:
+    evidence_class: direct_quote
+    evidence_ref_count: 1
+    burden_level: medium
+    sufficiency_status: sufficient
+    replayability_class: high
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: peer
+    actor_class: compiler
+    risk_tier: medium
+    promotion_tier: candidate
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: intake-first-pass
+    dependency_footprint: []
+    semantic_density: 0.93
+    novelty_state: novel
+  relational:
+    contradiction_refs: []
+    supersedes: []
+    superseded_by: []
+    depends_on:
+    - pc.candidate_claim.subject-0001.0004
+    - pc.evidence_link.subject-0001.0004
+    section_refs: []
+    cluster_refs: []
+  operational:
+    lane_ref: evidence-link-admissibility
+    repo_home: receipts/immutable/subject-0001/admissibility-0004.yaml
+    mirror_permissions: local_only
+    active_state: active
+    maintenance_burden: medium
+    route_destination: contradiction
+  temporal:
+    observed_at: '2026-04-13T04:37:00Z'
+    reduced_at: '2026-04-13T12:10:17Z'
+    status_since: '2026-04-13T12:10:17Z'
+    replay_stability: stable
+    drift_sensitivity: medium
+    maturity: working
+spec:
+  decision_id: pc.admissibility_decision.subject-0001.0004
+  target_claim_ref: pc.candidate_claim.subject-0001.0004
+  profile_ref: pc.admissibility.default.v1
+  pass_fail: pass
+  met_burdens:
+  - source_refs_present
+  - source_unit_refs_present
+  - evidence_status_sufficient
+  - direct_quote_support
+  unmet_burdens: []
+  reasons:
+  - claim carries source_refs lineage
+  - claim carries source_unit_refs lineage
+  - claim evidence sufficiency_status is sufficient
+  - claim evidence_class is direct_quote
+  - linked_evidence_ref=pc.evidence_link.subject-0001.0004
+  deciding_surface: compiler
+  override_used: false
