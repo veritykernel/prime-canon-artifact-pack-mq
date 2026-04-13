@@ -18,8 +18,13 @@ if [ "$ROW_COUNT" = "0" ]; then
   echo "TSV has header only and no real source rows: $TSV_PATH" >&2
   exit 1
 fi
+if grep -nE 'replace-with-real-source-ref|Replace this with the real normalized text|pending://|replace-me' "$TSV_PATH" >/dev/null 2>&1; then
+  echo "TSV contains placeholder values and cannot be enrolled: $TSV_PATH" >&2
+  grep -nE 'replace-with-real-source-ref|Replace this with the real normalized text|pending://|replace-me' "$TSV_PATH" >&2 || true
+  exit 1
+fi
 python3 scripts/enroll_source_units.py "$REPO" "$SUBJECT_SLUG" "$TSV_PATH"
 python3 scripts/validate_pack.py .
 git diff --exit-code -- control schemas
-git add "canon/corpora/$SUBJECT_SLUG/index.yaml" "canon/source_units/$SUBJECT_SLUG"
+git add "$TSV_PATH" "canon/corpora/$SUBJECT_SLUG/index.yaml" "canon/source_units/$SUBJECT_SLUG"
 git commit -m "intake: enroll first real source units for $SUBJECT_SLUG"
