@@ -1,0 +1,11 @@
+targets_id: pc.render_targets.default.v1
+allowed_projection_flags:
+  - machine_readable
+  - rendered_text
+  - exportable
+default_projection_flags:
+  - rendered_text
+allowed_output_formats:
+  - markdown
+  - yaml
+  - json

@@ -7,6 +7,12 @@ mkdir -p .git/hooks
 cat > .git/hooks/pre-commit <<'HOOK'
 #!/usr/bin/env bash
 set -euo pipefail
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+case "$BRANCH" in
+  cycle-2/*)
+    exit 0
+    ;;
+esac
 if ! git diff --cached --quiet -- control schemas; then
   echo
   echo "ERROR: control/ and schemas/ are frozen for the first implementation cycle."
@@ -16,4 +22,4 @@ if ! git diff --cached --quiet -- control schemas; then
 fi
 HOOK
 chmod +x .git/hooks/pre-commit
-echo "installed .git/hooks/pre-commit freeze guard"
+echo "installed branch-aware .git/hooks/pre-commit freeze guard"

@@ -1,0 +1,14 @@
+profile_id: pc.render_profile.default.v1
+default_output_format: markdown
+target_projection_flag: rendered_text
+section_strategy: linear_nodes
+ordering_strategy: active_node_order
+heading_style: numbered
+include_metadata_fields:
+  - corpus_id
+  - current_state_view
+  - generated_at
+include_receipt_footer: true
+redaction_policy_ref: pc.render_redaction.default.v1
+render_order_ref: pc.render_order.default.v1
+render_targets_ref: pc.render_targets.default.v1

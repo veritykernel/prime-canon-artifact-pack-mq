@@ -1,0 +1,4 @@
+redaction_id: pc.render_redaction.default.v1
+policy_mode: none
+strip_fields: []
+mask_patterns: []
