@@ -1,0 +1,107 @@
+kind: PRIME_CANON_REDUCTION_DECISION_RECEIPT_V1
+version: v1
+metadata:
+  object_id: pc.reduction_receipt.subject-0001.promotion-readiness
+  display_name: subject-0001 promotion readiness summary
+  created_at: '2026-04-13T12:43:02Z'
+  updated_at: '2026-04-13T12:43:02Z'
+  created_by: compiler:promotion-readiness-builder@1.0.0
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - subject-0001
+  - promotion-readiness
+  - summary
+attributes:
+  identity:
+    corpus_id: pc.corpus.subject-0001
+    subject_slug: subject-0001
+    canonical_home: receipts/immutable/subject-0001/promotion-readiness-summary.yaml
+  lineage:
+    source_refs: []
+    source_unit_refs: []
+    reduction_path:
+    - promotion_readiness
+    - summary_receipt
+    derivation_receipt_refs:
+    - pc.reduction_receipt.subject-0001.topology-scout
+    - pc.admissibility_decision.subject-0001.0001
+    - pc.admissibility_decision.subject-0001.0002
+    - pc.admissibility_decision.subject-0001.0003
+    - pc.admissibility_decision.subject-0001.0004
+    - pc.admissibility_decision.subject-0001.0005
+    - pc.replay_manifest.subject-0001.promotion-readiness
+    - pc.promotion_readiness.subject-0001.packet
+  evidence:
+    burden_level: medium
+    sufficiency_status: sufficient
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: peer
+    actor_class: compiler
+    risk_tier: low
+    promotion_tier: candidate
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: promotion-readiness
+  relational:
+    depends_on:
+    - pc.candidate_claim.subject-0001.0001
+    - pc.candidate_claim.subject-0001.0002
+    - pc.candidate_claim.subject-0001.0003
+    - pc.candidate_claim.subject-0001.0004
+    - pc.candidate_claim.subject-0001.0005
+    - pc.evidence_link.subject-0001.0001
+    - pc.evidence_link.subject-0001.0002
+    - pc.evidence_link.subject-0001.0003
+    - pc.evidence_link.subject-0001.0004
+    - pc.evidence_link.subject-0001.0005
+    - pc.promotion_readiness.subject-0001.packet
+    - pc.replay_manifest.subject-0001.promotion-readiness
+    cluster_refs: []
+    section_refs: []
+  operational:
+    lane_ref: promotion-readiness
+    repo_home: receipts/immutable/subject-0001/promotion-readiness-summary.yaml
+    active_state: active
+    mirror_permissions: local_only
+    route_destination: promotion_lane
+  temporal:
+    status_since: '2026-04-13T12:43:02Z'
+    replay_stability: stable
+    drift_sensitivity: low
+    maturity: working
+    reduced_at: '2026-04-13T12:43:02Z'
+spec:
+  decision_receipt_id: pc.reduction_receipt.subject-0001.promotion-readiness
+  target_ref: pc.promotion_readiness.subject-0001.packet
+  decision_type: defer
+  deciding_surface: compiler
+  rationale: promotion readiness passed for 5 admissible claim(s); topology blockers
+    clear; replay manifest pinned
+  cited_receipt_refs:
+  - pc.reduction_receipt.subject-0001.topology-scout
+  - pc.admissibility_decision.subject-0001.0001
+  - pc.admissibility_decision.subject-0001.0002
+  - pc.admissibility_decision.subject-0001.0003
+  - pc.admissibility_decision.subject-0001.0004
+  - pc.admissibility_decision.subject-0001.0005
+  cited_object_refs:
+  - pc.candidate_claim.subject-0001.0001
+  - pc.candidate_claim.subject-0001.0002
+  - pc.candidate_claim.subject-0001.0003
+  - pc.candidate_claim.subject-0001.0004
+  - pc.candidate_claim.subject-0001.0005
+  - pc.evidence_link.subject-0001.0001
+  - pc.evidence_link.subject-0001.0002
+  - pc.evidence_link.subject-0001.0003
+  - pc.evidence_link.subject-0001.0004
+  - pc.evidence_link.subject-0001.0005
+  - pc.replay_manifest.subject-0001.promotion-readiness
+  - pc.promotion_readiness.subject-0001.packet
+  jurisdiction_ref: pc.jurisdiction.human-reviewer
+  reviewer_refs: []
+  blocker_state: none
+  route_outcome: promotion_lane

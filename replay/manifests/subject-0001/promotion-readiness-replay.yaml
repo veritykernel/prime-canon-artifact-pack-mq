@@ -1,0 +1,146 @@
+kind: PRIME_CANON_REPLAY_MANIFEST_V1
+version: v1
+metadata:
+  object_id: pc.replay_manifest.subject-0001.promotion-readiness
+  display_name: subject-0001 promotion readiness replay manifest
+  created_at: '2026-04-13T12:43:02Z'
+  updated_at: '2026-04-13T12:43:02Z'
+  created_by: compiler:promotion-readiness-builder@1.0.0
+  owners:
+  - team:prime-canon
+  tags:
+  - prime-canon
+  - subject-0001
+  - replay-manifest
+  - promotion-readiness
+attributes:
+  identity:
+    corpus_id: pc.corpus.subject-0001
+    subject_slug: subject-0001
+    canonical_home: replay/manifests/subject-0001/promotion-readiness-replay.yaml
+  lineage:
+    source_refs: []
+    source_unit_refs: []
+    reduction_path:
+    - promotion_readiness
+    - replay_manifest
+    derivation_receipt_refs:
+    - pc.reduction_receipt.subject-0001.topology-scout
+    - pc.admissibility_decision.subject-0001.0001
+    - pc.admissibility_decision.subject-0001.0002
+    - pc.admissibility_decision.subject-0001.0003
+    - pc.admissibility_decision.subject-0001.0004
+    - pc.admissibility_decision.subject-0001.0005
+  evidence:
+    burden_level: medium
+    sufficiency_status: sufficient
+  governance:
+    jurisdiction_ref: pc.jurisdiction.human-reviewer
+    approval_level: peer
+    actor_class: compiler
+    risk_tier: medium
+    promotion_tier: candidate
+    freeze_class: reviewed
+  semantic:
+    domain: prime-canon
+    scope: promotion-readiness
+  relational:
+    depends_on:
+    - pc.admissibility_decision.subject-0001.0001
+    - pc.admissibility_decision.subject-0001.0002
+    - pc.admissibility_decision.subject-0001.0003
+    - pc.admissibility_decision.subject-0001.0004
+    - pc.admissibility_decision.subject-0001.0005
+    - pc.candidate_claim.subject-0001.0001
+    - pc.candidate_claim.subject-0001.0002
+    - pc.candidate_claim.subject-0001.0003
+    - pc.candidate_claim.subject-0001.0004
+    - pc.candidate_claim.subject-0001.0005
+    - pc.evidence_link.subject-0001.0001
+    - pc.evidence_link.subject-0001.0002
+    - pc.evidence_link.subject-0001.0003
+    - pc.evidence_link.subject-0001.0004
+    - pc.evidence_link.subject-0001.0005
+    - pc.reduction_receipt.subject-0001.topology-scout
+    cluster_refs: []
+    section_refs: []
+  operational:
+    lane_ref: promotion-readiness
+    repo_home: replay/manifests/subject-0001/promotion-readiness-replay.yaml
+    active_state: active
+    mirror_permissions: local_only
+    route_destination: promotion_lane
+  temporal:
+    status_since: '2026-04-13T12:43:02Z'
+    replay_stability: stable
+    drift_sensitivity: low
+    maturity: working
+    reduced_at: '2026-04-13T12:43:02Z'
+spec:
+  manifest_id: pc.replay_manifest.subject-0001.promotion-readiness
+  scope_ref: pc.corpus.subject-0001
+  object_refs:
+  - pc.admissibility_decision.subject-0001.0001
+  - pc.admissibility_decision.subject-0001.0002
+  - pc.admissibility_decision.subject-0001.0003
+  - pc.admissibility_decision.subject-0001.0004
+  - pc.admissibility_decision.subject-0001.0005
+  - pc.candidate_claim.subject-0001.0001
+  - pc.candidate_claim.subject-0001.0002
+  - pc.candidate_claim.subject-0001.0003
+  - pc.candidate_claim.subject-0001.0004
+  - pc.candidate_claim.subject-0001.0005
+  - pc.evidence_link.subject-0001.0001
+  - pc.evidence_link.subject-0001.0002
+  - pc.evidence_link.subject-0001.0003
+  - pc.evidence_link.subject-0001.0004
+  - pc.evidence_link.subject-0001.0005
+  - pc.reduction_receipt.subject-0001.topology-scout
+  profile_refs:
+  - pc.admissibility.default.v1
+  - pc.promotion.default.v1
+  compiler_refs:
+  - compiler:promotion-readiness-builder@1.0.0
+  - script:schema_contract.py
+  input_hashes:
+  - object_ref: pc.admissibility_decision.subject-0001.0001
+    sha256: 022537cb808bc99e9192c369202e589e59b64cabe68587fcf4c9f319258ab065
+  - object_ref: pc.admissibility_decision.subject-0001.0002
+    sha256: aab1cab78e91bba5b65bc82ceea9ad35eff78c588c2c201e48d254798685fdb1
+  - object_ref: pc.admissibility_decision.subject-0001.0003
+    sha256: 27dcaf34142b00e5b629f1c7e8a03d15f60ee39b45801b2d07dc1e037fb121d8
+  - object_ref: pc.admissibility_decision.subject-0001.0004
+    sha256: 38b4080e12440078404e3e0774608eda7eb2535bde39f8f5a3745a16cb06c151
+  - object_ref: pc.admissibility_decision.subject-0001.0005
+    sha256: 525d112f10257befd83a30c56534fc1351e0a012eaff5d767c0919dc279f8770
+  - object_ref: pc.candidate_claim.subject-0001.0001
+    sha256: 3ba8b6fd60b2e40bba8e8bf5bb657d9999344da35538127fd828ffe08f4d9a30
+  - object_ref: pc.candidate_claim.subject-0001.0002
+    sha256: e2bc87d97846f72aa52088e33026d527399fd09af0614700fb1ca07848dfed4c
+  - object_ref: pc.candidate_claim.subject-0001.0003
+    sha256: fdc58d28eb7f5ecf9a42b9204f09245447d5ce47897a1dd1ca250c398c125bdc
+  - object_ref: pc.candidate_claim.subject-0001.0004
+    sha256: 12005e4c27b9c90ba20454958435d7e32558fff838fdf0103998cf07123aa3f4
+  - object_ref: pc.candidate_claim.subject-0001.0005
+    sha256: 88938ec45655925bb8c479b9358a94bfd135024bab240bd6d482f75f2af6814d
+  - object_ref: pc.evidence_link.subject-0001.0001
+    sha256: f4b74add6ffd34b5c8ea2a6e3c520b7f2e8bbbc66f8eff114598aa68399ed21a
+  - object_ref: pc.evidence_link.subject-0001.0002
+    sha256: 4d8eb380fccb43ab6fec546740cc7a8819789995ea1a4ce0868cf642fe6c13d1
+  - object_ref: pc.evidence_link.subject-0001.0003
+    sha256: 579d455ade54a20c1a7530b656fec7d5ba4b3daf3d53e703ee6ca32a44a0d713
+  - object_ref: pc.evidence_link.subject-0001.0004
+    sha256: ce457a83873e8e84c24a88a053c552ea620ce43d81a67e5324116b06d1ecb739
+  - object_ref: pc.evidence_link.subject-0001.0005
+    sha256: d3ead11e4a175a6946a1dcf110e0dc2b17d4aa11a89720a94b2bb060d9b800cc
+  - object_ref: pc.reduction_receipt.subject-0001.topology-scout
+    sha256: dd51ab7bb6fff9081ae221f73c30cbdfba0799bc422e2c2d2ce4515ad5b324f8
+  expected_output_refs:
+  - pc.promotion_readiness.subject-0001.packet
+  - pc.reduction_receipt.subject-0001.promotion-readiness
+  environment_assumptions:
+  - schema bundle frozen
+  - control surfaces frozen
+  - local repo state validated
+  replay_class: deterministic
+  generated_from_ref: pc.reduction_receipt.subject-0001.topology-scout
