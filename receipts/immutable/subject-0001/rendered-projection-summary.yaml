@@ -1,23 +1,23 @@
-kind: PRIME_CANON_CURRENT_STATE_VIEW_V1
+kind: PRIME_CANON_REDUCTION_DECISION_RECEIPT_V1
 version: v1
 metadata:
-  object_id: pc.current_state_view.subject-0001.v1
-  display_name: subject-0001 current state view
-  created_at: '2026-04-13T18:14:43Z'
+  object_id: pc.reduction_receipt.subject-0001.rendered-projection
+  display_name: subject-0001 rendered projection summary
+  created_at: '2026-04-13T18:24:21Z'
   updated_at: '2026-04-13T18:24:21Z'
-  created_by: compiler:promotion-lane-builder@1.0.0
+  created_by: compiler:rendered-projection-builder@1.0.0
   owners:
   - team:prime-canon
   tags:
   - prime-canon
   - subject-0001
-  - current-state-view
-  - promoted
+  - rendered-projection
+  - summary
 attributes:
   identity:
     corpus_id: pc.corpus.subject-0001
     subject_slug: subject-0001
-    canonical_home: views/current/subject-0001.yaml
+    canonical_home: receipts/immutable/subject-0001/rendered-projection-summary.yaml
   lineage:
     source_refs:
     - chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
@@ -32,9 +32,8 @@ attributes:
     - pc.source_unit.subject-0001.0004
     - pc.source_unit.subject-0001.0005
     reduction_path:
-    - promotion_lane
-    - current_state_view
-    derivation_receipt_refs:
+    - rendered_projection_lane
+    derivation_receipt_refs: &id001
     - pc.reduction_receipt.subject-0001.promote-0001
     - pc.reduction_receipt.subject-0001.promote-0002
     - pc.reduction_receipt.subject-0001.promote-0003
@@ -50,12 +49,12 @@ attributes:
     jurisdiction_ref: pc.jurisdiction.human-reviewer
     approval_level: peer
     actor_class: compiler
-    risk_tier: medium
+    risk_tier: low
     promotion_tier: promoted
     freeze_class: reviewed
   semantic:
     domain: prime-canon
-    scope: current-state-view
+    scope: rendered-projection
   relational:
     depends_on:
     - pc.canon_node.subject-0001.0001
@@ -63,22 +62,15 @@ attributes:
     - pc.canon_node.subject-0001.0003
     - pc.canon_node.subject-0001.0004
     - pc.canon_node.subject-0001.0005
-    - pc.reduction_receipt.subject-0001.promote-0001
-    - pc.reduction_receipt.subject-0001.promote-0002
-    - pc.reduction_receipt.subject-0001.promote-0003
-    - pc.reduction_receipt.subject-0001.promote-0004
-    - pc.reduction_receipt.subject-0001.promote-0005
-    - pc.promotion_readiness.subject-0001.packet
-    - pc.reduction_receipt.subject-0001.promotion-readiness
-    - pc.replay_manifest.subject-0001.promotion-readiness
+    - pc.current_state_view.subject-0001.v1
     cluster_refs: []
     section_refs: []
   operational:
-    lane_ref: promotion-lane
-    repo_home: views/current/subject-0001.yaml
+    lane_ref: rendered-projection
+    repo_home: receipts/immutable/subject-0001/rendered-projection-summary.yaml
     active_state: active
     mirror_permissions: local_only
-    route_destination: export-prep
+    route_destination: deferred
   temporal:
     status_since: '2026-04-13T18:24:21Z'
     replay_stability: stable
@@ -86,28 +78,22 @@ attributes:
     maturity: working
     reduced_at: '2026-04-13T18:24:21Z'
 spec:
-  view_id: pc.current_state_view.subject-0001.v1
-  scope_ref: pc.corpus.subject-0001
-  active_node_refs:
+  decision_receipt_id: pc.reduction_receipt.subject-0001.rendered-projection
+  target_ref: pc.current_state_view.subject-0001.v1
+  decision_type: include
+  deciding_surface: compiler
+  rationale: rendered markdown projection views/rendered/subject-0001.md emitted from
+    current state view pc.current_state_view.subject-0001.v1 for 5 promoted nodes
+  cited_receipt_refs: *id001
+  cited_object_refs:
   - pc.canon_node.subject-0001.0001
   - pc.canon_node.subject-0001.0002
   - pc.canon_node.subject-0001.0003
   - pc.canon_node.subject-0001.0004
   - pc.canon_node.subject-0001.0005
-  active_edge_refs: []
-  active_contradiction_refs: []
-  unresolved_blocker_refs: []
-  view_hash: db6264358304038aace3259e26aab8c35d74801703d2c6672a604fdd24ff1452
-  derivation_receipt_refs:
-  - pc.reduction_receipt.subject-0001.promote-0001
-  - pc.reduction_receipt.subject-0001.promote-0002
-  - pc.reduction_receipt.subject-0001.promote-0003
-  - pc.reduction_receipt.subject-0001.promote-0004
-  - pc.reduction_receipt.subject-0001.promote-0005
-  - pc.promotion_readiness.subject-0001.packet
-  - pc.reduction_receipt.subject-0001.promotion-readiness
-  - pc.replay_manifest.subject-0001.promotion-readiness
-  - pc.reduction_receipt.subject-0001.rendered-projection
-  rendered_projection_refs:
+  - pc.current_state_view.subject-0001.v1
   - views/rendered/subject-0001.md
-  generated_at: '2026-04-13T18:24:21Z'
+  jurisdiction_ref: pc.jurisdiction.human-reviewer
+  reviewer_refs: []
+  blocker_state: none
+  route_outcome: deferred
