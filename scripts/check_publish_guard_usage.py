@@ -16,9 +16,9 @@ ALLOWLIST = {
 }
 
 PUBLISH_PATTERNS = [
-    r'\bcp\s+["' "'" r']?views/rendered/',
+    r'\bcp\s+["\']?views/rendered/',
     r'\brsync\b.*views/rendered/',
-    r'\bmv\s+["' "'" r']?views/rendered/',
+    r'\bmv\s+["\']?views/rendered/',
     r'\bscp\b.*views/rendered/',
     r'/Users/Shared/nuum-work/stage/.*\.rendered\.md',
 ]

@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - cycle-2/**
+  workflow_dispatch:
 
 jobs:
   publish-guard-check:
