@@ -4,7 +4,7 @@ metadata:
   object_id: pc.corpus.subject-0001
   display_name: Subject 0001 corpus index
   created_at: '2026-04-12T17:01:22Z'
-  updated_at: '2026-04-13T11:42:06Z'
+  updated_at: '2026-04-13T11:50:14Z'
   created_by: human:architect
   owners:
   - team:prime-canon
@@ -19,8 +19,16 @@ attributes:
   lineage:
     source_refs: &id001
     - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-002
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-003
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-004
+    - chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
     source_unit_refs:
     - pc.source_unit.subject-0001.0001
+    - pc.source_unit.subject-0001.0002
+    - pc.source_unit.subject-0001.0003
+    - pc.source_unit.subject-0001.0004
+    - pc.source_unit.subject-0001.0005
     reduction_path:
     - intake
     derivation_receipt_refs: []
@@ -28,7 +36,7 @@ attributes:
     burden_level: medium
     sufficiency_status: sufficient
     evidence_class: conversation
-    evidence_ref_count: 1
+    evidence_ref_count: 5
     replayability_class: high
   governance:
     jurisdiction_ref: pc.jurisdiction.human-reviewer
@@ -58,19 +66,19 @@ attributes:
     maintenance_burden: low
     route_destination: reduction
   temporal:
-    status_since: '2026-04-13T11:42:06Z'
+    status_since: '2026-04-13T11:50:14Z'
     replay_stability: stable
     drift_sensitivity: low
     maturity: governed
     observed_at: '2026-04-12T17:01:22Z'
-    reduced_at: '2026-04-13T11:42:06Z'
+    reduced_at: '2026-04-13T11:50:14Z'
 spec:
   corpus_id: pc.corpus.subject-0001
   subject_slug: subject-0001
   source_refs: *id001
   source_ordering: chronological
   intake_scope: Initial live subject bootstrap pending first real source enrollment.
-  source_count: 1
+  source_count: 5
   compiler_version: prime-canon-intake@1.0.0
   intake_policy_ref: pc.repo_manifest.main
   status: open

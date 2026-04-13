@@ -1,8 +1,8 @@
 kind: PRIME_CANON_SOURCE_UNIT_V1
 version: v1
 metadata:
-  object_id: pc.source_unit.subject-0001.0001
-  display_name: non-negotiable thesis 001
+  object_id: pc.source_unit.subject-0001.0005
+  display_name: disruptive question 001
   created_at: '2026-04-13T11:50:14Z'
   updated_at: '2026-04-13T11:50:14Z'
   created_by: human:operator
@@ -16,10 +16,10 @@ attributes:
   identity:
     corpus_id: pc.corpus.subject-0001
     subject_slug: subject-0001
-    canonical_home: canon/source_units/subject-0001/unit-0001.yaml
+    canonical_home: canon/source_units/subject-0001/unit-0005.yaml
   lineage:
     source_refs:
-    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
+    - chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
     source_unit_refs: []
     reduction_path:
     - intake
@@ -41,7 +41,7 @@ attributes:
     domain: prime-canon
     scope: intake-first-pass
     dependency_footprint: []
-    semantic_density: 0.95
+    semantic_density: 0.86
     novelty_state: novel
   relational:
     contradiction_refs: []
@@ -52,7 +52,7 @@ attributes:
     cluster_refs: []
   operational:
     lane_ref: intake
-    repo_home: canon/source_units/subject-0001/unit-0001.yaml
+    repo_home: canon/source_units/subject-0001/unit-0005.yaml
     active_state: active
     mirror_permissions: local_only
     maintenance_burden: low
@@ -65,15 +65,15 @@ attributes:
     observed_at: '2026-04-13T04:37:00Z'
     reduced_at: '2026-04-13T11:50:14Z'
 spec:
-  source_unit_id: pc.source_unit.subject-0001.0001
+  source_unit_id: pc.source_unit.subject-0001.0005
   corpus_id: pc.corpus.subject-0001
-  source_ref: chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
+  source_ref: chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
   span_ref:
-    locator: non-negotiable-thesis-001
+    locator: disruptive-questions-001
     start: 0
-    end: 74
-  normalized_text: Conversation is ingress. Artifacts are durable. Canon is a governed
-    state.
+    end: 94
+  normalized_text: Should canonical text become only one of several output projections
+    from a richer state model?
   extraction_method: message-span-normalize@1.0.0
   source_kind: chat_message
-  checksum: sha256:4abf81b506242ced60d6d7a139ef1663556ee8a438ef27c2a120fd27db30e49c
+  checksum: sha256:1978f1912be326213b1b72cd07f0a1522434d2bbbd165df4d4eef40c4b7c953c
