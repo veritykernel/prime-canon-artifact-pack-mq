@@ -7,17 +7,26 @@ from pathlib import Path
 
 import yaml
 
+from schema_contract import choose_enum, ensure_enum, ensure_required_fields, validate_instance
+
+EVIDENCE_LINK_KIND = "PRIME_CANON_EVIDENCE_LINK_V1"
+ADMISSIBILITY_KIND = "PRIME_CANON_ADMISSIBILITY_DECISION_V1"
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-def source_trust_class_for(evidence_class: str) -> str:
-    if evidence_class == "direct_quote":
-        return "high"
-    if evidence_class in {"artifact", "code", "issue", "pr", "derived_metric"}:
-        return "medium"
-    if evidence_class == "paraphrase":
-        return "medium"
-    return "low"
+def source_trust_class_for(repo: Path, evidence_class: str) -> str:
+    preferred = {
+        "direct_quote": "high",
+        "artifact": "medium",
+        "code": "medium",
+        "issue": "medium",
+        "pr": "medium",
+        "derived_metric": "medium",
+        "paraphrase": "medium",
+        "human_assertion": "low",
+    }.get(evidence_class, "unrated")
+    return choose_enum(repo, EVIDENCE_LINK_KIND, "source_trust_class", preferred, "unrated")
 
 def admissibility_weight_for(evidence_class: str, sufficiency_status: str, source_refs: list[str], source_unit_refs: list[str]) -> float:
     weight = 0.25
@@ -30,6 +39,18 @@ def admissibility_weight_for(evidence_class: str, sufficiency_status: str, sourc
     if sufficiency_status == "sufficient":
         weight += 0.15
     return round(min(weight, 1.0), 2)
+
+def support_type_for(repo: Path, evidence_class: str, sufficiency_status: str) -> str:
+    preferred = "supports" if evidence_class == "direct_quote" and sufficiency_status == "sufficient" else "weak_support"
+    return choose_enum(repo, EVIDENCE_LINK_KIND, "support_type", preferred, "contextualizes")
+
+def support_strength_for(repo: Path, evidence_class: str, sufficiency_status: str) -> str:
+    preferred = "high" if evidence_class == "direct_quote" and sufficiency_status == "sufficient" else ("medium" if sufficiency_status == "sufficient" else "low")
+    return choose_enum(repo, EVIDENCE_LINK_KIND, "support_strength", preferred, "low")
+
+def pass_fail_for(repo: Path, unmet_burdens: list[str]) -> str:
+    preferred = "fail" if unmet_burdens else "pass"
+    return choose_enum(repo, ADMISSIBILITY_KIND, "pass_fail", preferred, "provisional")
 
 def main() -> None:
     repo = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(".").resolve()
@@ -85,30 +106,27 @@ def main() -> None:
         link_id = f"pc.evidence_link.{subject_slug}.{seq}"
         link_rel_path = f"canon/evidence_links/{subject_slug}/link-{seq}.yaml"
         evidence_ref = source_unit_refs[0] if source_unit_refs else (source_refs[0] if source_refs else "")
-        source_trust_class = source_trust_class_for(evidence_class)
+        source_trust_class = source_trust_class_for(repo, evidence_class)
         admissibility_weight = admissibility_weight_for(evidence_class, sufficiency_status, source_refs, source_unit_refs)
+        support_type = support_type_for(repo, evidence_class, sufficiency_status)
+        support_strength = support_strength_for(repo, evidence_class, sufficiency_status)
 
-        if evidence_class == "direct_quote" and sufficiency_status == "sufficient":
-            support_type = "supports"
-            support_strength = "high"
-        elif sufficiency_status == "sufficient":
-            support_type = "weak_support"
-            support_strength = "medium"
-        else:
-            support_type = "weak_support"
-            support_strength = "low"
+        ensure_enum(repo, EVIDENCE_LINK_KIND, "evidence_class", evidence_class)
+        ensure_enum(repo, EVIDENCE_LINK_KIND, "support_type", support_type)
+        ensure_enum(repo, EVIDENCE_LINK_KIND, "support_strength", support_strength)
+        ensure_enum(repo, EVIDENCE_LINK_KIND, "source_trust_class", source_trust_class)
 
         evidence_link = {
-            "kind": "PRIME_CANON_EVIDENCE_LINK_V1",
+            "kind": EVIDENCE_LINK_KIND,
             "version": "v1",
             "metadata": {
                 "object_id": link_id,
                 "display_name": f"{subject_slug} evidence link {seq}",
                 "created_at": now,
                 "updated_at": now,
-                "created_by": "compiler:evidence-link-builder@1.0.1",
+                "created_by": "compiler:evidence-link-builder@1.1.0",
                 "owners": ["team:prime-canon"],
-                "tags": ["prime-canon", subject_slug, "evidence-link", "first-pass"],
+                "tags": ["prime-canon", subject_slug, "evidence-link", "schema-driven"],
             },
             "attributes": {
                 "identity": {
@@ -182,6 +200,9 @@ def main() -> None:
             },
         }
 
+        ensure_required_fields(repo, EVIDENCE_LINK_KIND, evidence_link["spec"])
+        validate_instance(repo, evidence_link)
+
         decision_id = f"pc.admissibility_decision.{subject_slug}.{seq}"
         decision_rel_path = f"receipts/immutable/{subject_slug}/admissibility-{seq}.yaml"
 
@@ -215,25 +236,20 @@ def main() -> None:
 
         reasons.append(f"linked_evidence_ref={link_id}")
 
-        if not reasons:
-            reasons = ["no admissibility rationale recorded"]
-
-        if unmet_burdens:
-            pass_fail = "fail"
-        else:
-            pass_fail = "pass"
+        pass_fail = pass_fail_for(repo, unmet_burdens)
+        deciding_surface = choose_enum(repo, ADMISSIBILITY_KIND, "deciding_surface", "compiler", "human")
 
         admissibility = {
-            "kind": "PRIME_CANON_ADMISSIBILITY_DECISION_V1",
+            "kind": ADMISSIBILITY_KIND,
             "version": "v1",
             "metadata": {
                 "object_id": decision_id,
                 "display_name": f"{subject_slug} admissibility decision {seq}",
                 "created_at": now,
                 "updated_at": now,
-                "created_by": "compiler:admissibility-builder@1.0.1",
+                "created_by": "compiler:admissibility-builder@1.1.0",
                 "owners": ["team:prime-canon"],
-                "tags": ["prime-canon", subject_slug, "admissibility", "first-pass"],
+                "tags": ["prime-canon", subject_slug, "admissibility", "schema-driven"],
             },
             "attributes": {
                 "identity": {
@@ -302,10 +318,13 @@ def main() -> None:
                 "met_burdens": met_burdens,
                 "unmet_burdens": unmet_burdens,
                 "reasons": reasons,
-                "deciding_surface": "compiler",
+                "deciding_surface": deciding_surface,
                 "override_used": False,
             },
         }
+
+        ensure_required_fields(repo, ADMISSIBILITY_KIND, admissibility["spec"])
+        validate_instance(repo, admissibility)
 
         (repo / link_rel_path).write_text(yaml.safe_dump(evidence_link, sort_keys=False), encoding="utf-8")
         (repo / decision_rel_path).write_text(yaml.safe_dump(admissibility, sort_keys=False), encoding="utf-8")

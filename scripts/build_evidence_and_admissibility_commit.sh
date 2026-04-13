@@ -16,5 +16,5 @@ fi
 python3 scripts/build_evidence_and_admissibility.py "$REPO" "$SUBJECT_SLUG"
 python3 scripts/validate_pack.py .
 git diff --exit-code -- control schemas
-git add "scripts/build_evidence_and_admissibility.py" "scripts/build_evidence_and_admissibility_commit.sh" "canon/corpora/$SUBJECT_SLUG/index.yaml" "canon/evidence_links/$SUBJECT_SLUG" "receipts/immutable/$SUBJECT_SLUG"
-git commit -m "reduction: first evidence-link plus admissibility pass for $SUBJECT_SLUG"
+git add "scripts/schema_contract.py" "scripts/build_evidence_and_admissibility.py" "scripts/build_evidence_and_admissibility_commit.sh" "canon/corpora/$SUBJECT_SLUG/index.yaml" "canon/evidence_links/$SUBJECT_SLUG" "receipts/immutable/$SUBJECT_SLUG"
+git commit -m "reduction: make evidence and admissibility lane schema-driven for $SUBJECT_SLUG"
