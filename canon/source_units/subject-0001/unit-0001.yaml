@@ -3,8 +3,8 @@ version: v1
 metadata:
   object_id: pc.source_unit.subject-0001.0001
   display_name: subject-0001 source unit 0001
-  created_at: '2026-04-13T07:32:57Z'
-  updated_at: '2026-04-13T07:32:57Z'
+  created_at: '2026-04-13T11:42:06Z'
+  updated_at: '2026-04-13T11:42:06Z'
   created_by: human:operator
   owners:
   - team:prime-canon
@@ -19,7 +19,7 @@ attributes:
     canonical_home: canon/source_units/subject-0001/unit-0001.yaml
   lineage:
     source_refs:
-    - chat://replace-with-real-source-ref
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
     source_unit_refs: []
     reduction_path:
     - intake
@@ -58,22 +58,22 @@ attributes:
     maintenance_burden: low
     route_destination: reduction
   temporal:
-    status_since: '2026-04-13T07:32:57Z'
+    status_since: '2026-04-13T11:42:06Z'
     replay_stability: stable
     drift_sensitivity: medium
     maturity: working
-    observed_at: '2026-04-12T21:15:00Z'
-    reduced_at: '2026-04-13T07:32:57Z'
+    observed_at: '2026-04-13T04:37:00Z'
+    reduced_at: '2026-04-13T11:42:06Z'
 spec:
   source_unit_id: pc.source_unit.subject-0001.0001
   corpus_id: pc.corpus.subject-0001
-  source_ref: chat://replace-with-real-source-ref
+  source_ref: chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
   span_ref:
-    locator: msg-001
+    locator: non-negotiable-thesis
     start: 0
-    end: 200
-  normalized_text: Replace this with the real normalized text for the first source
-    unit.
+    end: 74
+  normalized_text: Conversation is ingress. Artifacts are durable. Canon is a governed
+    state.
   extraction_method: message-span-normalize@1.0.0
   source_kind: chat_message
-  checksum: sha256:d0442c8b93a5cddf629c87a07920098bbea392e766780881f6e19d46e6463227
+  checksum: sha256:b734269ebbe37bedbd0d8d151fd091bcdeefb8cd5f231b6b6986c0d26972878e

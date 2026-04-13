@@ -1,1 +1,2 @@
 seq	source_ref	locator	start	end	observed_at	scope	normalized_text	display_name	source_kind	semantic_density	novelty_state	risk_tier	burden_level	sufficiency_status	evidence_class	drift_sensitivity	maintenance_burden	replay_stability	maturity	extraction_method
+0001	chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001	non-negotiable-thesis	0	74	2026-04-13T04:37:00Z	intake-first-pass	Conversation is ingress. Artifacts are durable. Canon is a governed state.

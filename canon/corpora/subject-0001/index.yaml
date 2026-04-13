@@ -4,7 +4,7 @@ metadata:
   object_id: pc.corpus.subject-0001
   display_name: Subject 0001 corpus index
   created_at: '2026-04-12T17:01:22Z'
-  updated_at: '2026-04-13T07:32:57Z'
+  updated_at: '2026-04-13T11:42:06Z'
   created_by: human:architect
   owners:
   - team:prime-canon
@@ -18,7 +18,7 @@ attributes:
     canonical_home: canon/corpora/subject-0001/index.yaml
   lineage:
     source_refs: &id001
-    - chat://replace-with-real-source-ref
+    - chat://pccp-disruption-llm-uptake-v1#non-negotiable-thesis-001
     source_unit_refs:
     - pc.source_unit.subject-0001.0001
     reduction_path:
@@ -58,12 +58,12 @@ attributes:
     maintenance_burden: low
     route_destination: reduction
   temporal:
-    status_since: '2026-04-13T07:32:57Z'
+    status_since: '2026-04-13T11:42:06Z'
     replay_stability: stable
     drift_sensitivity: low
     maturity: governed
     observed_at: '2026-04-12T17:01:22Z'
-    reduced_at: '2026-04-13T07:32:57Z'
+    reduced_at: '2026-04-13T11:42:06Z'
 spec:
   corpus_id: pc.corpus.subject-0001
   subject_slug: subject-0001
