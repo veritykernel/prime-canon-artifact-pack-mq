@@ -19,9 +19,28 @@ if [ "$NODE_COUNT" = "0" ]; then
   echo "no canon nodes found for $SUBJECT_SLUG" >&2
   exit 1
 fi
+for f in \
+  control/render/render-profile.default.yaml \
+  control/render/render-order.default.yaml \
+  control/render/render-targets.default.yaml \
+  control/render/render-redaction.default.yaml
+do
+  if [ ! -f "$f" ]; then
+    echo "missing render control surface: $f" >&2
+    exit 1
+  fi
+done
+rm -f "receipts/immutable/$SUBJECT_SLUG/rendered-projection-summary.yaml"
 python3 scripts/build_rendered_projection.py "$REPO" "$SUBJECT_SLUG"
 python3 scripts/validate_pack.py .
 git diff --exit-code -- control schemas
 rm -rf scripts/__pycache__
-git add "scripts/build_rendered_projection.py" "scripts/build_rendered_projection_commit.sh" "canon/corpora/$SUBJECT_SLUG/index.yaml" "canon/nodes/$SUBJECT_SLUG" "views/current/$SUBJECT_SLUG.yaml" "views/rendered/$SUBJECT_SLUG.md" "receipts/immutable/$SUBJECT_SLUG"
-git commit -m "projection: first rendered canon projection pass for $SUBJECT_SLUG"
+git add -A \
+  scripts/build_rendered_projection.py \
+  scripts/build_rendered_projection_commit.sh \
+  canon/corpora/$SUBJECT_SLUG/index.yaml \
+  canon/nodes/$SUBJECT_SLUG \
+  views/current/$SUBJECT_SLUG.yaml \
+  views/rendered/$SUBJECT_SLUG.md \
+  receipts/immutable/$SUBJECT_SLUG
+git commit -m "projection: make rendered projection lane control-driven with execution and drift receipts for $SUBJECT_SLUG"

@@ -1,23 +1,23 @@
-kind: PRIME_CANON_CURRENT_STATE_VIEW_V1
+kind: PRIME_CANON_RENDER_DRIFT_RECEIPT_V1
 version: v1
 metadata:
-  object_id: pc.current_state_view.subject-0001.v1
-  display_name: subject-0001 current state view
-  created_at: '2026-04-13T18:14:43Z'
+  object_id: pc.render_drift_receipt.subject-0001.default
+  display_name: subject-0001 render drift receipt
+  created_at: '2026-04-13T19:07:39Z'
   updated_at: '2026-04-13T19:07:39Z'
-  created_by: compiler:promotion-lane-builder@1.0.0
+  created_by: compiler:rendered-projection-builder@2.0.0
   owners:
   - team:prime-canon
   tags:
   - prime-canon
   - subject-0001
-  - current-state-view
-  - promoted
+  - render-drift
+  - cycle-2
 attributes:
   identity:
     corpus_id: pc.corpus.subject-0001
     subject_slug: subject-0001
-    canonical_home: views/current/subject-0001.yaml
+    canonical_home: receipts/immutable/subject-0001/render-drift.yaml
   lineage:
     source_refs:
     - chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
@@ -32,8 +32,8 @@ attributes:
     - pc.source_unit.subject-0001.0004
     - pc.source_unit.subject-0001.0005
     reduction_path:
-    - promotion_lane
-    - current_state_view
+    - rendered_projection
+    - render_drift_check
     derivation_receipt_refs:
     - pc.reduction_receipt.subject-0001.promote-0001
     - pc.reduction_receipt.subject-0001.promote-0002
@@ -43,6 +43,7 @@ attributes:
     - pc.promotion_readiness.subject-0001.packet
     - pc.reduction_receipt.subject-0001.promotion-readiness
     - pc.replay_manifest.subject-0001.promotion-readiness
+    - pc.render_execution_receipt.subject-0001.default
   evidence:
     burden_level: medium
     sufficiency_status: sufficient
@@ -50,12 +51,12 @@ attributes:
     jurisdiction_ref: pc.jurisdiction.human-reviewer
     approval_level: peer
     actor_class: compiler
-    risk_tier: medium
+    risk_tier: low
     promotion_tier: promoted
     freeze_class: reviewed
   semantic:
     domain: prime-canon
-    scope: current-state-view
+    scope: render-drift
   relational:
     depends_on:
     - pc.canon_node.subject-0001.0001
@@ -63,19 +64,13 @@ attributes:
     - pc.canon_node.subject-0001.0003
     - pc.canon_node.subject-0001.0004
     - pc.canon_node.subject-0001.0005
-    - pc.reduction_receipt.subject-0001.promote-0001
-    - pc.reduction_receipt.subject-0001.promote-0002
-    - pc.reduction_receipt.subject-0001.promote-0003
-    - pc.reduction_receipt.subject-0001.promote-0004
-    - pc.reduction_receipt.subject-0001.promote-0005
-    - pc.promotion_readiness.subject-0001.packet
-    - pc.reduction_receipt.subject-0001.promotion-readiness
-    - pc.replay_manifest.subject-0001.promotion-readiness
+    - pc.current_state_view.subject-0001.v1
+    - pc.render_execution_receipt.subject-0001.default
     cluster_refs: []
     section_refs: []
   operational:
-    lane_ref: promotion-lane
-    repo_home: views/current/subject-0001.yaml
+    lane_ref: rendered-projection
+    repo_home: receipts/immutable/subject-0001/render-drift.yaml
     active_state: active
     mirror_permissions: local_only
     route_destination: export-prep
@@ -86,29 +81,13 @@ attributes:
     maturity: working
     reduced_at: '2026-04-13T19:07:39Z'
 spec:
-  view_id: pc.current_state_view.subject-0001.v1
-  scope_ref: pc.corpus.subject-0001
-  active_node_refs:
-  - pc.canon_node.subject-0001.0001
-  - pc.canon_node.subject-0001.0002
-  - pc.canon_node.subject-0001.0003
-  - pc.canon_node.subject-0001.0004
-  - pc.canon_node.subject-0001.0005
-  active_edge_refs: []
-  active_contradiction_refs: []
-  unresolved_blocker_refs: []
-  view_hash: 78ffa4831297ecfbc7252b7e460178958ca7593a357977268a6053e910a1db20
-  derivation_receipt_refs:
-  - pc.reduction_receipt.subject-0001.promote-0001
-  - pc.reduction_receipt.subject-0001.promote-0002
-  - pc.reduction_receipt.subject-0001.promote-0003
-  - pc.reduction_receipt.subject-0001.promote-0004
-  - pc.reduction_receipt.subject-0001.promote-0005
-  - pc.promotion_readiness.subject-0001.packet
-  - pc.reduction_receipt.subject-0001.promotion-readiness
-  - pc.replay_manifest.subject-0001.promotion-readiness
-  - pc.render_execution_receipt.subject-0001.default
-  - pc.render_drift_receipt.subject-0001.default
-  rendered_projection_refs:
-  - views/rendered/subject-0001.md
-  generated_at: '2026-04-13T19:07:39Z'
+  drift_receipt_id: pc.render_drift_receipt.subject-0001.default
+  plan_ref: pc.render_plan.subject-0001.default
+  target_view_ref: pc.current_state_view.subject-0001.v1
+  output_ref: views/rendered/subject-0001.md
+  current_view_hash: 78ffa4831297ecfbc7252b7e460178958ca7593a357977268a6053e910a1db20
+  output_sha256: 8f4885a5fa5d5260b829c45bbcb4ae1ab238e0e689a8cd5c5c8174345dd0eaf3
+  drift_status: in_sync
+  compared_at: '2026-04-13T19:07:39Z'
+  blocker: false
+  recommended_route: export_prep

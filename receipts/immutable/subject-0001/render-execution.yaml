@@ -1,23 +1,23 @@
-kind: PRIME_CANON_REDUCTION_DECISION_RECEIPT_V1
+kind: PRIME_CANON_RENDER_EXECUTION_RECEIPT_V1
 version: v1
 metadata:
-  object_id: pc.reduction_receipt.subject-0001.rendered-projection
-  display_name: subject-0001 rendered projection summary
-  created_at: '2026-04-13T18:24:21Z'
-  updated_at: '2026-04-13T18:24:21Z'
-  created_by: compiler:rendered-projection-builder@1.0.0
+  object_id: pc.render_execution_receipt.subject-0001.default
+  display_name: subject-0001 render execution receipt
+  created_at: '2026-04-13T19:07:39Z'
+  updated_at: '2026-04-13T19:07:39Z'
+  created_by: compiler:rendered-projection-builder@2.0.0
   owners:
   - team:prime-canon
   tags:
   - prime-canon
   - subject-0001
-  - rendered-projection
-  - summary
+  - render-execution
+  - cycle-2
 attributes:
   identity:
     corpus_id: pc.corpus.subject-0001
     subject_slug: subject-0001
-    canonical_home: receipts/immutable/subject-0001/rendered-projection-summary.yaml
+    canonical_home: receipts/immutable/subject-0001/render-execution.yaml
   lineage:
     source_refs:
     - chat://pccp-disruption-llm-uptake-v1#disruptive-questions-001
@@ -32,8 +32,9 @@ attributes:
     - pc.source_unit.subject-0001.0004
     - pc.source_unit.subject-0001.0005
     reduction_path:
-    - rendered_projection_lane
-    derivation_receipt_refs: &id001
+    - rendered_projection
+    - render_execution
+    derivation_receipt_refs:
     - pc.reduction_receipt.subject-0001.promote-0001
     - pc.reduction_receipt.subject-0001.promote-0002
     - pc.reduction_receipt.subject-0001.promote-0003
@@ -54,7 +55,7 @@ attributes:
     freeze_class: reviewed
   semantic:
     domain: prime-canon
-    scope: rendered-projection
+    scope: render-execution
   relational:
     depends_on:
     - pc.canon_node.subject-0001.0001
@@ -67,24 +68,27 @@ attributes:
     section_refs: []
   operational:
     lane_ref: rendered-projection
-    repo_home: receipts/immutable/subject-0001/rendered-projection-summary.yaml
+    repo_home: receipts/immutable/subject-0001/render-execution.yaml
     active_state: active
     mirror_permissions: local_only
-    route_destination: deferred
+    route_destination: export-prep
   temporal:
-    status_since: '2026-04-13T18:24:21Z'
+    status_since: '2026-04-13T19:07:39Z'
     replay_stability: stable
     drift_sensitivity: low
     maturity: working
-    reduced_at: '2026-04-13T18:24:21Z'
+    reduced_at: '2026-04-13T19:07:39Z'
 spec:
-  decision_receipt_id: pc.reduction_receipt.subject-0001.rendered-projection
-  target_ref: pc.current_state_view.subject-0001.v1
-  decision_type: include
-  deciding_surface: compiler
-  rationale: rendered markdown projection views/rendered/subject-0001.md emitted from
-    current state view pc.current_state_view.subject-0001.v1 for 5 promoted nodes
-  cited_receipt_refs: *id001
+  execution_receipt_id: pc.render_execution_receipt.subject-0001.default
+  plan_ref: pc.render_plan.subject-0001.default
+  profile_ref: pc.render_profile.default.v1
+  target_view_ref: pc.current_state_view.subject-0001.v1
+  output_ref: views/rendered/subject-0001.md
+  output_sha256: 8f4885a5fa5d5260b829c45bbcb4ae1ab238e0e689a8cd5c5c8174345dd0eaf3
+  rendered_node_count: 5
+  rendered_projection_flag: rendered_text
+  execution_status: success
+  generated_at: '2026-04-13T19:07:39Z'
   cited_object_refs:
   - pc.canon_node.subject-0001.0001
   - pc.canon_node.subject-0001.0002
@@ -92,8 +96,4 @@ spec:
   - pc.canon_node.subject-0001.0004
   - pc.canon_node.subject-0001.0005
   - pc.current_state_view.subject-0001.v1
-  - views/rendered/subject-0001.md
-  jurisdiction_ref: pc.jurisdiction.human-reviewer
-  reviewer_refs: []
-  blocker_state: none
-  route_outcome: deferred
+  drift_check_required: true
