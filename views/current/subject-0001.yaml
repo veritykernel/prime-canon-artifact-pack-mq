@@ -4,7 +4,7 @@ metadata:
   object_id: pc.current_state_view.subject-0001.v1
   display_name: subject-0001 current state view
   created_at: '2026-04-13T18:14:43Z'
-  updated_at: '2026-04-13T18:24:21Z'
+  updated_at: '2026-04-13T19:30:40Z'
   created_by: compiler:promotion-lane-builder@1.0.0
   owners:
   - team:prime-canon
@@ -78,13 +78,13 @@ attributes:
     repo_home: views/current/subject-0001.yaml
     active_state: active
     mirror_permissions: local_only
-    route_destination: export-prep
+    route_destination: export_prep
   temporal:
-    status_since: '2026-04-13T18:24:21Z'
+    status_since: '2026-04-13T19:30:40Z'
     replay_stability: stable
     drift_sensitivity: low
     maturity: working
-    reduced_at: '2026-04-13T18:24:21Z'
+    reduced_at: '2026-04-13T19:30:40Z'
 spec:
   view_id: pc.current_state_view.subject-0001.v1
   scope_ref: pc.corpus.subject-0001
@@ -97,7 +97,7 @@ spec:
   active_edge_refs: []
   active_contradiction_refs: []
   unresolved_blocker_refs: []
-  view_hash: db6264358304038aace3259e26aab8c35d74801703d2c6672a604fdd24ff1452
+  view_hash: 78ffa4831297ecfbc7252b7e460178958ca7593a357977268a6053e910a1db20
   derivation_receipt_refs:
   - pc.reduction_receipt.subject-0001.promote-0001
   - pc.reduction_receipt.subject-0001.promote-0002
@@ -107,7 +107,8 @@ spec:
   - pc.promotion_readiness.subject-0001.packet
   - pc.reduction_receipt.subject-0001.promotion-readiness
   - pc.replay_manifest.subject-0001.promotion-readiness
-  - pc.reduction_receipt.subject-0001.rendered-projection
+  - pc.render_execution_receipt.subject-0001.default
+  - pc.render_drift_receipt.subject-0001.default
   rendered_projection_refs:
   - views/rendered/subject-0001.md
-  generated_at: '2026-04-13T18:24:21Z'
+  generated_at: '2026-04-13T19:07:39Z'
