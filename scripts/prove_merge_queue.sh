@@ -10,15 +10,27 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 
 ORG_SLUG="${ORG_SLUG:-veritykernel}"
-FEATURE_BRANCH="${FEATURE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
-MQ_REPO="${MQ_REPO:-$ORG_SLUG/prime-canon-artifact-pack-mq}"
+SOURCE_BRANCH="${SOURCE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
+RUN_ID="${RUN_ID:-$(date -u +%Y%m%d%H%M%S)}"
+REPO_NAME="${REPO_NAME:-prime-canon-artifact-pack-mq-$RUN_ID}"
+MQ_REPO="${MQ_REPO:-$ORG_SLUG/$REPO_NAME}"
 WORKFLOW_FILE="publish-guard-check.yml"
 WORKFLOW_NAME="publish-guard-check"
+PROOF_BRANCH="mq-proof-$RUN_ID"
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+cleanup() {
+  git checkout "$CURRENT_BRANCH" >/dev/null 2>&1 || true
+  if git show-ref --verify --quiet "refs/heads/$PROOF_BRANCH"; then
+    git branch -D "$PROOF_BRANCH" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
 
 gh auth status
 
 if ! gh repo view "$MQ_REPO" >/dev/null 2>&1; then
-  gh repo create "$MQ_REPO" --public --source=. --remote=mq
+  gh api --method POST "orgs/$ORG_SLUG/repos" -f name="$REPO_NAME" -F private=false >/dev/null
 fi
 
 if git remote get-url mq >/dev/null 2>&1; then
@@ -27,30 +39,35 @@ else
   git remote add mq "https://github.com/$MQ_REPO.git"
 fi
 
-git push -u mq main
-git push -u mq "$FEATURE_BRANCH"
-
+git push -u mq "$SOURCE_BRANCH:main"
 gh api --method PATCH "repos/$MQ_REPO" -f default_branch=main >/dev/null
 
-gh workflow run "$WORKFLOW_FILE" --repo "$MQ_REPO" --ref "$FEATURE_BRANCH" >/dev/null 2>&1 || true
+git checkout -B "$PROOF_BRANCH" "$SOURCE_BRANCH"
+git commit --allow-empty -m "mq proof trigger $RUN_ID"
+PR_HEAD_SHA="$(git rev-parse HEAD)"
+git push -u mq "$PROOF_BRANCH"
 
 STATUS=""
 CONCLUSION=""
 for _ in $(seq 1 36); do
-  RUN_JSON="$(gh run list --repo "$MQ_REPO" --workflow "$WORKFLOW_FILE" --branch "$FEATURE_BRANCH" --event push --json status,conclusion --limit 20 2>/dev/null || echo '[]')"
-  STATUS="$(python3 - <<'PY' "$RUN_JSON"
+  RUN_JSON="$(gh run list --repo "$MQ_REPO" --workflow "$WORKFLOW_FILE" --branch "$PROOF_BRANCH" --event push --json status,conclusion,headSha --limit 20 2>/dev/null || echo '[]')"
+  STATUS="$(python3 - <<'PY' "$RUN_JSON" "$PR_HEAD_SHA"
 import json, sys
 runs = json.loads(sys.argv[1])
-print(runs[0].get("status","") if runs else "")
+head = sys.argv[2]
+found = next((r for r in runs if r.get("headSha")==head), None)
+print(found.get("status","") if found else "")
 PY
 )"
-  CONCLUSION="$(python3 - <<'PY' "$RUN_JSON"
+  CONCLUSION="$(python3 - <<'PY' "$RUN_JSON" "$PR_HEAD_SHA"
 import json, sys
 runs = json.loads(sys.argv[1])
-print(runs[0].get("conclusion","") if runs else "")
+head = sys.argv[2]
+found = next((r for r in runs if r.get("headSha")==head), None)
+print(found.get("conclusion","") if found else "")
 PY
 )"
-  echo "feature-push $WORKFLOW_NAME status=${STATUS:-none} conclusion=${CONCLUSION:-none}"
+  echo "proof-branch push $WORKFLOW_NAME status=${STATUS:-none} conclusion=${CONCLUSION:-none}"
   if [ "$STATUS" = "completed" ]; then
     break
   fi
@@ -58,7 +75,7 @@ PY
 done
 
 if [ "$STATUS" != "completed" ] || [ "$CONCLUSION" != "success" ]; then
-  echo "$WORKFLOW_NAME did not complete successfully on feature-branch push in $MQ_REPO" >&2
+  echo "$WORKFLOW_NAME did not complete successfully on proof-branch push in $MQ_REPO" >&2
   exit 1
 fi
 
@@ -110,13 +127,9 @@ else
   gh api --method POST -H "Accept: application/vnd.github+json" "repos/$MQ_REPO/rulesets" --input /tmp/prime_canon_merge_queue_ruleset.json >/dev/null
 fi
 
-if gh pr view --repo "$MQ_REPO" "$FEATURE_BRANCH" >/dev/null 2>&1; then
-  echo "PR already exists for $FEATURE_BRANCH"
-else
-  gh pr create --repo "$MQ_REPO" --base main --head "$FEATURE_BRANCH" --fill
-fi
+gh pr create --repo "$MQ_REPO" --base main --head "$PROOF_BRANCH" --title "mq proof $RUN_ID" --body "Deterministic merge queue proof for publish-guard-check." >/dev/null
 
-PR_JSON="$(gh pr view --repo "$MQ_REPO" "$FEATURE_BRANCH" --json number,url,headRefOid)"
+PR_JSON="$(gh pr view --repo "$MQ_REPO" "$PROOF_BRANCH" --json number,url,headRefOid)"
 export PR_JSON
 PR_NUMBER="$(python3 - <<'PY'
 import json, os
@@ -142,7 +155,7 @@ echo "pr_url=$PR_URL"
 STATUS=""
 CONCLUSION=""
 for _ in $(seq 1 36); do
-  RUN_JSON="$(gh run list --repo "$MQ_REPO" --workflow "$WORKFLOW_FILE" --branch "$FEATURE_BRANCH" --event pull_request --json status,conclusion,headSha,url --limit 20 2>/dev/null || echo '[]')"
+  RUN_JSON="$(gh run list --repo "$MQ_REPO" --workflow "$WORKFLOW_FILE" --branch "$PROOF_BRANCH" --event pull_request --json status,conclusion,headSha,url --limit 20 2>/dev/null || echo '[]')"
   STATUS="$(python3 - <<'PY' "$RUN_JSON" "$PR_HEAD_SHA"
 import json, sys
 runs = json.loads(sys.argv[1])
@@ -171,7 +184,7 @@ if [ "$STATUS" != "completed" ] || [ "$CONCLUSION" != "success" ]; then
   exit 1
 fi
 
-gh pr merge --repo "$MQ_REPO" "$FEATURE_BRANCH" --squash --match-head-commit "$PR_HEAD_SHA"
+gh pr merge --repo "$MQ_REPO" "$PROOF_BRANCH" --squash --match-head-commit "$PR_HEAD_SHA"
 
 STATUS=""
 CONCLUSION=""
