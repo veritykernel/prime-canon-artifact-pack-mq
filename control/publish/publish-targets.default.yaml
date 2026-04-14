@@ -1,0 +1,4 @@
+publish_targets_id: pc.publish_targets.default.v1
+subjects:
+  subject-0001:
+    rendered_markdown_path: /Users/Shared/nuum-work/stage/subject-0001.rendered.md
