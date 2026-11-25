@@ -77,6 +77,8 @@ Runtime surfaces:
 
 ## Validation surfaces
 
+Promotion authorization: [docs/PROMOTION-AUTHORIZATION.md](docs/PROMOTION-AUTHORIZATION.md).
+
 Local:
 
 ```bash
