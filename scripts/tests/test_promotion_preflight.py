@@ -16,6 +16,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from promotion_preflight import PromotionRejected, preflight
 import promote_nodes_and_current_state
+from publish_verified_subject import publish
 
 
 SOURCE = Path(__file__).resolve().parents[2]
@@ -124,6 +125,43 @@ class PromotionPreflightTests(unittest.TestCase):
             link = yaml.safe_load(path.read_text())
             self.assertEqual(link["spec"]["source_trust_class"], "unrated")
             self.assertEqual(link["spec"]["admissibility_weight"], 0.0)
+
+
+class VerifiedPublicationTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.repo = self.root / "repo"
+        for directory in ("control", "receipts", "views"):
+            shutil.copytree(SOURCE / directory, self.repo / directory)
+        self.stage = self.root / "stage"
+        self.stage.mkdir()
+        self.target = self.stage / f"{SUBJECT}.rendered.md"
+        cfg_path = self.repo / "control" / "publish" / "publish-targets.default.yaml"
+        cfg = yaml.safe_load(cfg_path.read_text())
+        cfg["subjects"][SUBJECT]["rendered_markdown_path"] = str(self.target)
+        cfg_path.write_text(yaml.safe_dump(cfg))
+
+    def test_publishes_the_verified_bytes(self):
+        self.assertEqual(publish(self.repo, SUBJECT), self.target)
+        self.assertEqual(self.target.read_bytes(), (self.repo / "views" / "rendered" / f"{SUBJECT}.md").read_bytes())
+
+    def test_changed_render_cannot_replace_existing_publication(self):
+        self.target.write_text("prior publication")
+        source = self.repo / "views" / "rendered" / f"{SUBJECT}.md"
+        source.write_text(source.read_text() + "\nchanged after drift check\n")
+        with self.assertRaisesRegex(PromotionRejected, "rendered source bytes differ"):
+            publish(self.repo, SUBJECT)
+        self.assertEqual(self.target.read_text(), "prior publication")
+
+    def test_symlink_target_cannot_overwrite_operator_file(self):
+        protected = self.root / "operator-file"
+        protected.write_text("keep")
+        self.target.symlink_to(protected)
+        with self.assertRaisesRegex(PromotionRejected, "target is a symlink"):
+            publish(self.repo, SUBJECT)
+        self.assertEqual(protected.read_text(), "keep")
 
 
 if __name__ == "__main__":

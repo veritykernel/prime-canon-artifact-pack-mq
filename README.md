@@ -79,6 +79,8 @@ Runtime surfaces:
 
 Promotion authorization: [docs/PROMOTION-AUTHORIZATION.md](docs/PROMOTION-AUTHORIZATION.md).
 
+Rendered publication: [docs/PUBLICATION.md](docs/PUBLICATION.md).
+
 Local:
 
 ```bash

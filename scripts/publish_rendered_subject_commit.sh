@@ -18,6 +18,7 @@ rm -rf scripts/__pycache__
 git add \
   control/publish/publish-targets.default.yaml \
   scripts/publish_rendered_subject.sh \
+  scripts/publish_verified_subject.py \
   scripts/check_publish_guard_usage.py \
   scripts/publish_rendered_subject_commit.sh
 git commit -m "projection: bind repo-owned publish lane behind publish guard for $SUBJECT_SLUG"
