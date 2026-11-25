@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,41 +17,31 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 def source_trust_class_for(repo: Path, evidence_class: str) -> str:
-    preferred = {
-        "direct_quote": "high",
-        "artifact": "medium",
-        "code": "medium",
-        "issue": "medium",
-        "pr": "medium",
-        "derived_metric": "medium",
-        "paraphrase": "medium",
-        "human_assertion": "low",
-    }.get(evidence_class, "unrated")
-    return choose_enum(repo, EVIDENCE_LINK_KIND, "source_trust_class", preferred, "unrated")
+    # evidence_class is copied from a contributor-authored claim. It cannot
+    # establish the provenance or quality of the underlying source.
+    return choose_enum(repo, EVIDENCE_LINK_KIND, "source_trust_class", "unrated")
 
 def admissibility_weight_for(evidence_class: str, sufficiency_status: str, source_refs: list[str], source_unit_refs: list[str]) -> float:
-    weight = 0.25
-    if source_refs:
-        weight += 0.20
-    if source_unit_refs:
-        weight += 0.20
-    if evidence_class == "direct_quote":
-        weight += 0.20
-    if sufficiency_status == "sufficient":
-        weight += 0.15
-    return round(min(weight, 1.0), 2)
+    # Presence and labels in the same author-controlled pack are not an
+    # independent admissibility assessment.
+    return 0.0
 
 def support_type_for(repo: Path, evidence_class: str, sufficiency_status: str) -> str:
-    preferred = "supports" if evidence_class == "direct_quote" and sufficiency_status == "sufficient" else "weak_support"
-    return choose_enum(repo, EVIDENCE_LINK_KIND, "support_type", preferred, "contextualizes")
+    return choose_enum(repo, EVIDENCE_LINK_KIND, "support_type", "contextualizes", "weak_support")
 
 def support_strength_for(repo: Path, evidence_class: str, sufficiency_status: str) -> str:
-    preferred = "high" if evidence_class == "direct_quote" and sufficiency_status == "sufficient" else ("medium" if sufficiency_status == "sufficient" else "low")
-    return choose_enum(repo, EVIDENCE_LINK_KIND, "support_strength", preferred, "low")
+    return choose_enum(repo, EVIDENCE_LINK_KIND, "support_strength", "low")
 
 def pass_fail_for(repo: Path, unmet_burdens: list[str]) -> str:
     preferred = "fail" if unmet_burdens else "pass"
     return choose_enum(repo, ADMISSIBILITY_KIND, "pass_fail", preferred, "provisional")
+
+def write_new(repo: Path, path: Path, obj: dict) -> None:
+    if not path.parent.resolve().is_relative_to(repo):
+        raise SystemExit(f"output path escapes repository: {path}")
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o644)
+    with os.fdopen(fd, "w", encoding="utf-8") as stream:
+        stream.write(yaml.safe_dump(obj, sort_keys=False))
 
 def main() -> None:
     repo = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(".").resolve()
@@ -66,8 +57,10 @@ def main() -> None:
     if not corpus_index_path.exists():
         raise SystemExit(f"missing corpus index: {corpus_index_path}")
 
-    evidence_dir.mkdir(parents=True, exist_ok=True)
-    receipt_dir.mkdir(parents=True, exist_ok=True)
+    for directory in (evidence_dir, receipt_dir):
+        if directory.is_symlink() or not directory.resolve().is_relative_to(repo):
+            raise SystemExit(f"output directory is not a repository directory: {directory}")
+        directory.mkdir(parents=True, exist_ok=True)
 
     claim_files = sorted(
         p for p in claim_dir.glob("claim-*.yaml")
@@ -75,6 +68,13 @@ def main() -> None:
     )
     if not claim_files:
         raise SystemExit(f"no candidate claim files found in {claim_dir}")
+
+    # A regenerated compiler receipt must not replace an immutable decision.
+    for claim_path in claim_files:
+        seq = claim_path.stem.replace("claim-", "")
+        if any(path.exists() or path.is_symlink() for path in
+               (evidence_dir / f"link-{seq}.yaml", receipt_dir / f"admissibility-{seq}.yaml")):
+            raise SystemExit(f"prior evidence or admissibility output exists for {seq}; reconcile before rebuilding")
 
     corpus = yaml.safe_load(corpus_index_path.read_text(encoding="utf-8"))
     corpus_id = corpus["spec"]["corpus_id"]
@@ -229,10 +229,12 @@ def main() -> None:
             unmet_burdens.append("evidence_status_sufficient")
 
         if evidence_class == "direct_quote":
-            met_burdens.append("direct_quote_support")
-            reasons.append("claim evidence_class is direct_quote")
+            reasons.append("claim labels its evidence as a direct quote; source not independently verified")
         else:
             unmet_burdens.append("direct_quote_support")
+
+        unmet_burdens.append("independent_source_verification")
+        reasons.append("compiler cannot attest source authenticity or evidence sufficiency from contributor-authored labels")
 
         reasons.append(f"linked_evidence_ref={link_id}")
 
@@ -326,8 +328,8 @@ def main() -> None:
         ensure_required_fields(repo, ADMISSIBILITY_KIND, admissibility["spec"])
         validate_instance(repo, admissibility)
 
-        (repo / link_rel_path).write_text(yaml.safe_dump(evidence_link, sort_keys=False), encoding="utf-8")
-        (repo / decision_rel_path).write_text(yaml.safe_dump(admissibility, sort_keys=False), encoding="utf-8")
+        write_new(repo, repo / link_rel_path, evidence_link)
+        write_new(repo, repo / decision_rel_path, admissibility)
 
         built_link_ids.append(link_id)
         built_decision_ids.append(decision_id)
