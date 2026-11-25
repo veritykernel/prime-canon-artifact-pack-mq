@@ -13,6 +13,11 @@ from schema_contract import choose_enum, ensure_required_fields, validate_instan
 CONTRADICTION_KIND = "PRIME_CANON_CONTRADICTION_BUNDLE_V1"
 SUPERSESSION_KIND = "PRIME_CANON_SUPERSESSION_EDGE_V1"
 RECEIPT_KIND = "PRIME_CANON_REDUCTION_DECISION_RECEIPT_V1"
+MAX_CLAIM_FILES = 256
+MAX_CLAIM_BYTES = 64 * 1024
+MAX_CLAIM_BODY_BYTES = 4096
+MAX_PAIR_COMPARISONS = 4096
+MAX_TOPOLOGY_OUTPUTS = 256
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -23,12 +28,15 @@ def norm(s: str) -> str:
 def tokens(s: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]+", s.lower()))
 
-def jaccard(a: str, b: str) -> float:
-    ta = tokens(a)
-    tb = tokens(b)
+def jaccard(ta: set[str], tb: set[str]) -> float:
     if not ta or not tb:
         return 0.0
     return len(ta & tb) / len(ta | tb)
+
+def queue_topology_output(pending: list[tuple[Path, dict]], path: Path, artifact: dict) -> None:
+    if len(pending) >= MAX_TOPOLOGY_OUTPUTS:
+        raise SystemExit(f"topology scout exceeds {MAX_TOPOLOGY_OUTPUTS} output artifacts")
+    pending.append((path, artifact))
 
 def has_negation(s: str) -> bool:
     return bool(re.search(r"\b(no|not|never|cannot|can't|won't|isn't|aren't|don't|doesn't|without)\b", s.lower()))
@@ -301,10 +309,6 @@ def main() -> None:
     if not corpus_index_path.exists():
         raise SystemExit(f"missing corpus index: {corpus_index_path}")
 
-    contradiction_dir.mkdir(parents=True, exist_ok=True)
-    supersession_dir.mkdir(parents=True, exist_ok=True)
-    receipt_dir.mkdir(parents=True, exist_ok=True)
-
     claim_files = sorted(p for p in claim_dir.glob("claim-*.yaml") if p.is_file())
     admiss_files = sorted(p for p in admiss_dir.glob("admissibility-*.yaml") if p.is_file())
 
@@ -312,6 +316,8 @@ def main() -> None:
         raise SystemExit(f"no candidate claim files found in {claim_dir}")
     if not admiss_files:
         raise SystemExit(f"no admissibility decision files found in {admiss_dir}")
+    if len(claim_files) > MAX_CLAIM_FILES:
+        raise SystemExit(f"topology scout exceeds {MAX_CLAIM_FILES} candidate claim files")
 
     corpus = yaml.safe_load(corpus_index_path.read_text(encoding="utf-8"))
     corpus_id = corpus["spec"]["corpus_id"]
@@ -327,15 +333,26 @@ def main() -> None:
 
     claims = []
     for path in claim_files:
+        if path.stat().st_size > MAX_CLAIM_BYTES:
+            raise SystemExit(f"topology scout claim file exceeds {MAX_CLAIM_BYTES} bytes: {path}")
         claim = yaml.safe_load(path.read_text(encoding="utf-8"))
         if admissibility_passed(admissibility_by_claim.get(claim["spec"]["claim_id"], {})):
+            if len(claim["spec"]["normalized_claim_body"].encode("utf-8")) > MAX_CLAIM_BODY_BYTES:
+                raise SystemExit(f"topology scout claim body exceeds {MAX_CLAIM_BODY_BYTES} bytes: {path}")
             claims.append(claim)
+
+    pair_count = len(claims) * (len(claims) - 1) // 2
+    if pair_count > MAX_PAIR_COMPARISONS:
+        raise SystemExit(f"topology scout exceeds {MAX_PAIR_COMPARISONS} pair comparisons ({pair_count})")
+    claim_tokens = [tokens(claim["spec"]["normalized_claim_body"]) for claim in claims]
+    claim_negations = [has_negation(claim["spec"]["normalized_claim_body"]) for claim in claims]
 
     contradiction_refs = []
     supersession_refs = []
     contradiction_seq = 1
     supersession_seq = 1
     seen_pairs = set()
+    pending_outputs = []
 
     for i in range(len(claims)):
         left = claims[i]
@@ -350,14 +367,14 @@ def main() -> None:
                 continue
             seen_pairs.add(pair_key)
 
-            overlap = jaccard(left_text, right_text)
+            overlap = jaccard(claim_tokens[i], claim_tokens[j])
             source_refs = sorted(set(left["attributes"]["lineage"].get("source_refs", []) + right["attributes"]["lineage"].get("source_refs", [])))
             source_unit_refs = sorted(set(left["attributes"]["lineage"].get("source_unit_refs", []) + right["attributes"]["lineage"].get("source_unit_refs", [])))
 
-            if overlap >= 0.60 and has_negation(left_text) != has_negation(right_text):
+            if overlap >= 0.60 and claim_negations[i] != claim_negations[j]:
                 contradiction = build_contradiction(repo, subject_slug, corpus_id, now, contradiction_seq, left, right, source_refs, source_unit_refs)
                 out = repo / contradiction["attributes"]["identity"]["canonical_home"]
-                out.write_text(yaml.safe_dump(contradiction, sort_keys=False), encoding="utf-8")
+                queue_topology_output(pending_outputs, out, contradiction)
                 contradiction_refs.append(contradiction["metadata"]["object_id"])
                 contradiction_seq += 1
                 continue
@@ -371,14 +388,14 @@ def main() -> None:
                 if left_norm != right_norm and left_norm in right_norm and len(right_norm) - len(left_norm) >= 24:
                     edge = build_supersession(repo, subject_slug, corpus_id, now, supersession_seq, left, right, source_refs, source_unit_refs, "successor claim strictly contains prior claim text and adds more specific scope")
                     out = repo / edge["attributes"]["identity"]["canonical_home"]
-                    out.write_text(yaml.safe_dump(edge, sort_keys=False), encoding="utf-8")
+                    queue_topology_output(pending_outputs, out, edge)
                     supersession_refs.append(edge["metadata"]["object_id"])
                     supersession_seq += 1
                     continue
                 if left_norm != right_norm and right_norm in left_norm and len(left_norm) - len(right_norm) >= 24:
                     edge = build_supersession(repo, subject_slug, corpus_id, now, supersession_seq, right, left, source_refs, source_unit_refs, "successor claim strictly contains prior claim text and adds more specific scope")
                     out = repo / edge["attributes"]["identity"]["canonical_home"]
-                    out.write_text(yaml.safe_dump(edge, sort_keys=False), encoding="utf-8")
+                    queue_topology_output(pending_outputs, out, edge)
                     supersession_refs.append(edge["metadata"]["object_id"])
                     supersession_seq += 1
                     continue
@@ -397,6 +414,11 @@ def main() -> None:
         route_destination = "promotion-readiness"
 
     receipt = build_receipt(repo, subject_slug, corpus_id, now, route_outcome, blocker_state, rationale, cited_receipt_refs, cited_object_refs)
+    contradiction_dir.mkdir(parents=True, exist_ok=True)
+    supersession_dir.mkdir(parents=True, exist_ok=True)
+    receipt_dir.mkdir(parents=True, exist_ok=True)
+    for out, artifact in pending_outputs:
+        out.write_text(yaml.safe_dump(artifact, sort_keys=False), encoding="utf-8")
     (repo / receipt["attributes"]["identity"]["canonical_home"]).write_text(yaml.safe_dump(receipt, sort_keys=False), encoding="utf-8")
 
     corpus["metadata"]["updated_at"] = now

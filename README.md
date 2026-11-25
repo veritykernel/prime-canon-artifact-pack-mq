@@ -100,6 +100,16 @@ CI:
 
 - `.github/workflows/validate-prime-canon.yml`
 
+## Compiler input and output limits
+
+`enroll_source_units.py` accepts at most 256 source rows in a regular TSV of at
+most 2 MiB. Each `normalized_text` is limited to 4 KiB and their combined size
+to 512 KiB. `scout_contradictions_and_supersession.py` accepts claim files of at
+most 64 KiB, passing claim bodies of at most 4 KiB, at most 4,096 claim pairs,
+and at most 256 generated topology artifacts. Quota failures happen before
+these commands write canon or receipt outputs. The renderer rejects symlinked
+rendered output paths and writes the Markdown projection by atomic replacement.
+
 ## Suggested first implementation sequence
 
 1. Freeze `control/` and `schemas/`.
