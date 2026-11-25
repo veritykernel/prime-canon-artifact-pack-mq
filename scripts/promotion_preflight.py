@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import re
 import stat
@@ -119,6 +120,8 @@ def preflight(repo: Path, subject: str, *, approval_path: Path | None = None,
     packet, packet_raw = _yaml(repo, receipt_dir / "promotion-readiness-packet.yaml")
     summary, summary_raw = _yaml(repo, receipt_dir / "promotion-readiness-summary.yaml")
     manifest, manifest_raw = _yaml(repo, repo / "replay" / "manifests" / subject / "promotion-readiness-replay.yaml")
+    formula_profile, formula_profile_raw = _yaml(repo, repo / "control" / "formulas" / "core-default.yaml")
+    jurisdiction, jurisdiction_raw = _yaml(repo, repo / "control" / "jurisdictions" / "human-reviewer.yaml")
     corpus_id = corpus["spec"]["corpus_id"]
     if not isinstance(corpus_id, str) or not corpus_id.endswith(f".{subject}"):
         raise PromotionRejected("corpus identity does not match subject")
@@ -140,6 +143,7 @@ def preflight(repo: Path, subject: str, *, approval_path: Path | None = None,
         (repo / "canon" / "candidate_claims" / subject, "claim-*.yaml"),
         (repo / "canon" / "evidence_links" / subject, "link-*.yaml"),
         (receipt_dir, "admissibility-*.yaml"),
+        (receipt_dir, "formula-eval-*.yaml"),
         (receipt_dir, "topology-scout-summary.yaml"),
     )
     for directory, pattern in groups:
@@ -188,10 +192,80 @@ def preflight(repo: Path, subject: str, *, approval_path: Path | None = None,
         "packet_sha256": _digest(packet_raw),
         "summary_sha256": _digest(summary_raw),
         "manifest_sha256": _digest(manifest_raw),
+        "formula_profile_sha256": _digest(formula_profile_raw),
+        "jurisdiction_sha256": _digest(jurisdiction_raw),
         "target_refs": targets,
     }
     reviewer, approval_hash = verify_approval(repo, approval_path, signature_path, signers_path,
                                                expected, root_owned=root_owned)
+    policy = formula_profile["spec"]
+    jurisdiction_spec = jurisdiction["spec"]
+    hard_gates = {item["name"] for item in policy.get("hard_gates", []) if item.get("blocking") is True}
+    required = {"admissibility_pass", "jurisdiction_pass", "no_open_critical_contradiction", "required_receipts_present"}
+    if (policy.get("profile_id") != "pc.formula_profile.core-default"
+            or not required.issubset(hard_gates)
+            or jurisdiction_spec.get("actor_class") != "human"
+            or jurisdiction_spec.get("actor_ref") != reviewer
+            or "promote" not in jurisdiction_spec.get("allowed_actions", [])
+            or "promote" in jurisdiction_spec.get("forbidden_actions", [])):
+        raise PromotionRejected("configured formula or jurisdiction policy does not authorize promotion")
+    max_age = policy.get("expiry_policy", {}).get("max_age_days")
+    if not isinstance(max_age, int) or max_age < 1 or max_age > 30 or policy["expiry_policy"].get("expires_when_inputs_change") is not True:
+        raise PromotionRejected("invalid formula expiry policy")
+    now = datetime.now(timezone.utc)
+    for obj in (packet, summary, manifest):
+        try:
+            created = datetime.fromisoformat(obj["metadata"]["created_at"].replace("Z", "+00:00"))
+        except (AttributeError, ValueError) as exc:
+            raise PromotionRejected("invalid promotion object time") from exc
+        if created.tzinfo is None or created > now or now - created > timedelta(days=max_age):
+            raise PromotionRejected("promotion readiness evidence has expired")
+    gate_results = {item["gate"]: item["status"] for item in packet["spec"].get("gate_results", [])}
+    if gate_results.get("formula_eval_receipts_present") != "pass":
+        raise PromotionRejected("formula evaluation gate has not passed")
+    formulas = {}
+    for object_id, (obj, _, _) in objects.items():
+        if obj.get("kind") == "PRIME_CANON_FORMULA_EVAL_RECEIPT_V1":
+            ref = obj["spec"]["target_ref"]
+            if ref in formulas or obj["spec"].get("formula_profile_ref") != policy["profile_id"]:
+                raise PromotionRejected("duplicate or wrong-profile formula evaluation")
+            formulas[ref] = obj
+    if set(formulas) != set(targets):
+        raise PromotionRejected("missing formula evaluation for exact promotion targets")
+    composites = {item["name"]: item for item in policy.get("composites", [])}
+    try:
+        promote_min = next(band["min"] for band in composites["inclusion_score"]["threshold_bands"]
+                           if band["label"] == "promote_candidate")
+        ready_min = next(band["min"] for band in composites["promotion_readiness_score"]["threshold_bands"]
+                         if band["label"] == "ready")
+        for ref in targets:
+            snapshot = formulas[ref]["spec"]["input_snapshot"]
+            metrics = formulas[ref]["spec"]["output_metrics"]
+            inclusion = float(metrics["inclusion_score"])
+            strength = float(metrics["evidence_strength"])
+            diversity = min(1.0, float(snapshot["source_diversity"]) / 3.0)
+            conflict = float(metrics["conflict_severity"])
+            readiness = 0.35 * inclusion + 0.25 * (1.0 - conflict) + 0.20 * strength + 0.20 * diversity
+            if (not all(math.isfinite(value) for value in (inclusion, strength, diversity, conflict, readiness))
+                    or not 0 <= strength <= 1 or not 0 <= conflict <= 1
+                    or inclusion < float(promote_min) or readiness < float(ready_min)):
+                raise PromotionRejected(f"formula score gate has not passed for {ref}")
+    except (KeyError, StopIteration, TypeError, ValueError) as exc:
+        if isinstance(exc, PromotionRejected):
+            raise
+        raise PromotionRejected("formula evaluation or threshold bands are invalid") from exc
+    decisions = {}
+    for obj, _, _ in objects.values():
+        if obj.get("kind") == "PRIME_CANON_ADMISSIBILITY_DECISION_V1":
+            ref = obj["spec"]["target_claim_ref"]
+            if ref in decisions:
+                raise PromotionRejected("duplicate admissibility decision")
+            decisions[ref] = obj
+    if set(decisions) != set(targets) or any(decisions[ref]["spec"].get("pass_fail") != "pass" for ref in targets):
+        raise PromotionRejected("admissibility hard gate has not passed")
+    if any(obj["spec"].get("blocker_state") != "none" for obj, _, _ in objects.values()
+           if obj.get("metadata", {}).get("object_id", "").endswith(".topology-scout")):
+        raise PromotionRejected("topology contradiction gate has not passed")
     return {"corpus": corpus, "corpus_sha256": _digest(corpus_raw), "packet": packet, "summary": summary,
             "manifest": manifest, "claims": claims, "links": links,
             "reviewer": reviewer, "approval_sha256": approval_hash}

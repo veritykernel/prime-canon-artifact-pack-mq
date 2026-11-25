@@ -29,7 +29,7 @@ class PromotionPreflightTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.repo = self.root / "repo"
-        for directory in ("canon", "receipts", "replay", "schemas"):
+        for directory in ("canon", "receipts", "replay", "schemas", "control"):
             shutil.copytree(SOURCE / directory, self.repo / directory)
         self.approval = self.root / "approval.json"
         self.signers = self.root / "allowed_signers"
@@ -45,6 +45,8 @@ class PromotionPreflightTests(unittest.TestCase):
             "packet_sha256": receipt / "promotion-readiness-packet.yaml",
             "summary_sha256": receipt / "promotion-readiness-summary.yaml",
             "manifest_sha256": self.repo / "replay" / "manifests" / SUBJECT / "promotion-readiness-replay.yaml",
+            "formula_profile_sha256": self.repo / "control" / "formulas" / "core-default.yaml",
+            "jurisdiction_sha256": self.repo / "control" / "jurisdictions" / "human-reviewer.yaml",
         }
         packet = yaml.safe_load(paths["packet_sha256"].read_bytes())
         now = datetime.now(timezone.utc)
@@ -60,9 +62,51 @@ class PromotionPreflightTests(unittest.TestCase):
         }
         body.update({name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in paths.items()})
         self.approval.write_text(json.dumps(body, sort_keys=True))
+        self.root.joinpath("approval.json.sig").unlink(missing_ok=True)
         subprocess.run(["ssh-keygen", "-Y", "sign", "-f", str(self.private),
                         "-n", "prime-canon-promotion-v1", str(self.approval)],
                        check=True, capture_output=True)
+
+    def make_policy_ready(self):
+        receipt_dir = self.repo / "receipts" / "immutable" / SUBJECT
+        packet_path = receipt_dir / "promotion-readiness-packet.yaml"
+        summary_path = receipt_dir / "promotion-readiness-summary.yaml"
+        manifest_path = self.repo / "replay" / "manifests" / SUBJECT / "promotion-readiness-replay.yaml"
+        packet = yaml.safe_load(packet_path.read_text())
+        summary = yaml.safe_load(summary_path.read_text())
+        manifest = yaml.safe_load(manifest_path.read_text())
+        example = yaml.safe_load((SOURCE / "receipts" / "immutable" / "example-subject" / "formula-eval-receipt-0001.yaml").read_text())
+        now = datetime.now(timezone.utc).isoformat()
+        for ref in packet["spec"]["target_refs"]:
+            seq = ref.rsplit(".", 1)[-1]
+            path = receipt_dir / f"formula-eval-{seq}.yaml"
+            formula = json.loads(json.dumps(example))
+            object_id = f"pc.receipt.formula.{SUBJECT}.{seq}"
+            formula["metadata"]["object_id"] = object_id
+            formula["metadata"]["created_at"] = now
+            formula["attributes"]["identity"] = {
+                "corpus_id": f"pc.corpus.{SUBJECT}", "subject_slug": SUBJECT,
+                "canonical_home": f"receipts/immutable/{SUBJECT}/formula-eval-{seq}.yaml",
+            }
+            formula["spec"]["receipt_id"] = object_id
+            formula["spec"]["target_ref"] = ref
+            formula["spec"]["input_snapshot"]["source_diversity"] = 3
+            formula["spec"]["output_metrics"].update(
+                inclusion_score=0.95, evidence_strength=1.0, conflict_severity=0.0)
+            path.write_text(yaml.safe_dump(formula, sort_keys=False))
+            manifest["spec"]["object_refs"].append(object_id)
+            manifest["spec"]["input_hashes"].append({
+                "object_ref": object_id, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+        manifest["spec"]["object_refs"].sort()
+        manifest["spec"]["input_hashes"].sort(key=lambda item: item["object_ref"])
+        packet["spec"]["required_gates"].append("formula_eval_receipts_present")
+        packet["spec"]["gate_results"].append({
+            "gate": "formula_eval_receipts_present", "status": "pass",
+            "evidence": [entry["object_ref"] for entry in manifest["spec"]["input_hashes"]
+            if entry["object_ref"].startswith("pc.receipt.formula.")]})
+        for obj, path in ((packet, packet_path), (summary, summary_path), (manifest, manifest_path)):
+            obj["metadata"]["created_at"] = now
+            path.write_text(yaml.safe_dump(obj, sort_keys=False))
 
     def check(self):
         return preflight(self.repo, SUBJECT, approval_path=self.approval,
@@ -70,11 +114,15 @@ class PromotionPreflightTests(unittest.TestCase):
                          signers_path=self.signers, root_owned=False)
 
     def test_valid_signature_and_frozen_inputs(self):
+        self.make_policy_ready()
+        self.sign()
         frozen = self.check()
         self.assertEqual(frozen["reviewer"], "human:reviewer")
         self.assertEqual(len(frozen["claims"]), 5)
 
     def test_signed_new_subject_writes_reviewer_bound_receipts(self):
+        self.make_policy_ready()
+        self.sign()
         receipt_dir = self.repo / "receipts" / "immutable" / SUBJECT
         for path in receipt_dir.glob("promotion-node-*.yaml"):
             path.unlink()
@@ -106,6 +154,41 @@ class PromotionPreflightTests(unittest.TestCase):
     def test_no_approval_fails_closed(self):
         with self.assertRaisesRegex(PromotionRejected, "external signed human approval"):
             preflight(self.repo, SUBJECT)
+
+    def test_signed_historical_readiness_has_expired(self):
+        with self.assertRaisesRegex(PromotionRejected, "evidence has expired"):
+            self.check()
+
+    def test_readiness_builder_blocks_missing_formula_receipts(self):
+        receipt_dir = self.repo / "receipts" / "immutable" / SUBJECT
+        (receipt_dir / "promotion-readiness-packet.yaml").unlink()
+        (receipt_dir / "promotion-readiness-summary.yaml").unlink()
+        (self.repo / "replay" / "manifests" / SUBJECT / "promotion-readiness-replay.yaml").unlink()
+        result = subprocess.run([sys.executable, str(SOURCE / "scripts" / "build_promotion_readiness.py"),
+                                 str(self.repo), SUBJECT], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = yaml.safe_load((self.repo / "receipts" / "immutable" / SUBJECT /
+                                 "promotion-readiness-packet.yaml").read_text())
+        self.assertFalse(packet["spec"]["ready"])
+        self.assertIn("formula_eval_receipts_present", packet["spec"]["blockers"])
+
+    def test_duplicate_claim_id_cannot_reuse_another_claims_decision(self):
+        claim_dir = self.repo / "canon" / "candidate_claims" / SUBJECT
+        first = yaml.safe_load((claim_dir / "claim-0001.yaml").read_text())
+        second_path = claim_dir / "claim-0002.yaml"
+        second = yaml.safe_load(second_path.read_text())
+        second["spec"]["claim_id"] = first["spec"]["claim_id"]
+        second_path.write_text(yaml.safe_dump(second, sort_keys=False))
+        receipt_dir = self.repo / "receipts" / "immutable" / SUBJECT
+        (receipt_dir / "promotion-readiness-packet.yaml").unlink()
+        (receipt_dir / "promotion-readiness-summary.yaml").unlink()
+        manifest_path = self.repo / "replay" / "manifests" / SUBJECT / "promotion-readiness-replay.yaml"
+        manifest_path.unlink()
+        result = subprocess.run([sys.executable, str(SOURCE / "scripts" / "build_promotion_readiness.py"),
+                                 str(self.repo), SUBJECT], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("duplicate claim id", result.stderr)
+        self.assertFalse(manifest_path.exists())
 
     def test_contributor_labels_cannot_create_passing_admissibility(self):
         for path in (self.repo / "canon" / "evidence_links" / SUBJECT).glob("link-*.yaml"):

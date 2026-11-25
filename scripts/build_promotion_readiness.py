@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,6 +10,7 @@ from pathlib import Path
 import yaml
 
 from schema_contract import choose_enum, ensure_required_fields, validate_instance
+from promotion_preflight import SUBJECT
 
 PACKET_KIND = "PRIME_CANON_PROMOTION_READINESS_PACKET_V1"
 MANIFEST_KIND = "PRIME_CANON_REPLAY_MANIFEST_V1"
@@ -19,6 +21,13 @@ def utc_now() -> str:
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def write_new(repo: Path, path: Path, obj: dict) -> None:
+    if not path.parent.resolve().is_relative_to(repo):
+        raise SystemExit(f"output path escapes repository: {path}")
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o644)
+    with os.fdopen(fd, "w", encoding="utf-8") as stream:
+        stream.write(yaml.safe_dump(obj, sort_keys=False))
 
 def blast_radius_for(repo: Path, target_count: int) -> str:
     if target_count <= 5:
@@ -34,6 +43,8 @@ def blast_radius_for(repo: Path, target_count: int) -> str:
 def main() -> None:
     repo = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(".").resolve()
     subject_slug = sys.argv[2] if len(sys.argv) > 2 else "subject-0001"
+    if not SUBJECT.fullmatch(subject_slug):
+        raise SystemExit("invalid subject slug")
 
     corpus_index_path = repo / "canon" / "corpora" / subject_slug / "index.yaml"
     claim_dir = repo / "canon" / "candidate_claims" / subject_slug
@@ -52,11 +63,19 @@ def main() -> None:
     if not receipt_dir.exists():
         raise SystemExit(f"missing receipt dir: {receipt_dir}")
 
+    if replay_dir.is_symlink() or receipt_dir.is_symlink() or corpus_index_path.is_symlink():
+        raise SystemExit("readiness input or output path is a symlink")
+    outputs = (replay_dir / "promotion-readiness-replay.yaml",
+               receipt_dir / "promotion-readiness-packet.yaml",
+               receipt_dir / "promotion-readiness-summary.yaml")
+    if any(path.exists() or path.is_symlink() for path in outputs):
+        raise SystemExit("readiness outputs already exist; reconcile the prior effect before retrying")
     replay_dir.mkdir(parents=True, exist_ok=True)
 
     claim_files = sorted(p for p in claim_dir.glob("claim-*.yaml") if p.is_file())
     evidence_files = sorted(p for p in evidence_dir.glob("link-*.yaml") if p.is_file())
     admissibility_files = sorted(p for p in receipt_dir.glob("admissibility-*.yaml") if p.is_file())
+    formula_files = sorted(p for p in receipt_dir.glob("formula-eval-*.yaml") if p.is_file())
     contradiction_files = sorted(p for p in contradiction_dir.glob("contradiction-*.yaml") if p.is_file())
     supersession_files = sorted(p for p in supersession_dir.glob("edge-*.yaml") if p.is_file())
     topology_receipt_path = receipt_dir / "topology-scout-summary.yaml"
@@ -82,6 +101,8 @@ def main() -> None:
         decision = yaml.safe_load(path.read_text(encoding="utf-8"))
         claim_ref = decision["spec"]["target_claim_ref"]
         decision_id = decision["metadata"]["object_id"]
+        if claim_ref in admissibility_by_claim or decision_id in admissibility_paths_by_id:
+            raise SystemExit(f"duplicate admissibility decision for {claim_ref}")
         admissibility_by_claim[claim_ref] = decision
         admissibility_receipt_ids.append(decision_id)
         admissibility_paths_by_id[decision_id] = path
@@ -92,17 +113,32 @@ def main() -> None:
     for path in claim_files:
         claim = yaml.safe_load(path.read_text(encoding="utf-8"))
         claim_id = claim["spec"]["claim_id"]
+        if claim_id in claim_paths_by_id:
+            raise SystemExit(f"duplicate claim id: {claim_id}")
         claim_paths_by_id[claim_id] = path
         decision = admissibility_by_claim.get(claim_id)
         if decision and decision["spec"]["pass_fail"] == "pass":
             target_claims.append(claim)
             target_claim_ids.append(claim_id)
 
+    formula_paths_by_id = {}
+    formula_by_target = {}
+    for path in formula_files:
+        formula = yaml.safe_load(path.read_text(encoding="utf-8"))
+        formula_id = formula["metadata"]["object_id"]
+        target_ref = formula["spec"]["target_ref"]
+        if formula_id in formula_paths_by_id or target_ref in formula_by_target:
+            raise SystemExit(f"duplicate formula evaluation for {target_ref}")
+        formula_paths_by_id[formula_id] = path
+        formula_by_target[target_ref] = formula
+
     evidence_link_ids = []
     evidence_paths_by_id = {}
     for path in evidence_files:
         link = yaml.safe_load(path.read_text(encoding="utf-8"))
         link_id = link["metadata"]["object_id"]
+        if link_id in evidence_paths_by_id:
+            raise SystemExit(f"duplicate evidence link id: {link_id}")
         evidence_link_ids.append(link_id)
         evidence_paths_by_id[link_id] = path
 
@@ -127,6 +163,7 @@ def main() -> None:
         "topology_summary_present",
         "topology_blockers_clear",
         "replay_manifest_built",
+        "formula_eval_receipts_present",
     ]
 
     gate_results = []
@@ -183,6 +220,8 @@ def main() -> None:
         object_ref_paths[link_id] = path
     for receipt_id, path in admissibility_paths_by_id.items():
         object_ref_paths[receipt_id] = path
+    for formula_id, path in formula_paths_by_id.items():
+        object_ref_paths[formula_id] = path
     object_ref_paths[topology_receipt_id] = topology_receipt_path
 
     input_hashes = []
@@ -283,6 +322,17 @@ def main() -> None:
         "gate": "replay_manifest_built",
         "status": "pass",
         "evidence": [manifest_id],
+    })
+
+    formula_present = all(
+        claim_id in formula_by_target
+        and formula_by_target[claim_id]["spec"].get("formula_profile_ref") == "pc.formula_profile.core-default"
+        for claim_id in target_claim_ids
+    )
+    gate_results.append({
+        "gate": "formula_eval_receipts_present",
+        "status": "pass" if formula_present else "fail",
+        "evidence": sorted(formula_paths_by_id),
     })
 
     blockers = []
@@ -460,9 +510,9 @@ def main() -> None:
     ensure_required_fields(repo, RECEIPT_KIND, summary_receipt["spec"])
     validate_instance(repo, summary_receipt)
 
-    (repo / manifest_rel_path).write_text(yaml.safe_dump(replay_manifest, sort_keys=False), encoding="utf-8")
-    (repo / packet_rel_path).write_text(yaml.safe_dump(promotion_packet, sort_keys=False), encoding="utf-8")
-    (repo / summary_rel_path).write_text(yaml.safe_dump(summary_receipt, sort_keys=False), encoding="utf-8")
+    write_new(repo, repo / manifest_rel_path, replay_manifest)
+    write_new(repo, repo / packet_rel_path, promotion_packet)
+    write_new(repo, repo / summary_rel_path, summary_receipt)
 
     corpus["metadata"]["updated_at"] = now
     corpus["attributes"]["temporal"]["reduced_at"] = now

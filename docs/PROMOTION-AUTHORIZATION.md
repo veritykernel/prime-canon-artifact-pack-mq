@@ -4,6 +4,10 @@
 authorize a canon write. The promotion command now verifies every replay
 manifest input hash and requires a signed, short-lived human approval over the
 exact packet, summary, manifest, corpus, and ordered target list before writing.
+It also checks the configured formula and jurisdiction policy, requires a
+formula evaluation receipt for every target, evaluates the configured score
+thresholds, and rejects readiness evidence older than the profile's 30-day
+limit. Formula receipts are part of the replay manifest's hashed input set.
 
 The approval is a JSON object with exactly these fields:
 
@@ -16,6 +20,8 @@ The approval is a JSON object with exactly these fields:
   "packet_sha256": "<sha256 of promotion-readiness-packet.yaml bytes>",
   "summary_sha256": "<sha256 of promotion-readiness-summary.yaml bytes>",
   "manifest_sha256": "<sha256 of promotion-readiness-replay.yaml bytes>",
+  "formula_profile_sha256": "<sha256 of core-default formula profile bytes>",
+  "jurisdiction_sha256": "<sha256 of human-reviewer jurisdiction bytes>",
   "target_refs": ["<exact ordered packet target refs>"],
   "issued_at": "<UTC ISO 8601 timestamp>",
   "expires_at": "<UTC ISO 8601 timestamp within 30 days>",
@@ -41,4 +47,5 @@ promotion must be reconciled before retrying. Historic receipts remain
 unchanged. Compiler-generated admissibility from contributor labels now
 fails the independent-source-verification burden; an
 independent reviewer must assess real source material before new readiness can
-pass.
+pass. The checked-in `subject-0001` readiness artifacts are historical and
+lack formula evaluation receipts; they cannot authorize a new promotion.
