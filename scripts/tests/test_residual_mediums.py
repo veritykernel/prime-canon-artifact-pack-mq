@@ -14,6 +14,10 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from enroll_source_units import (MAX_NORMALIZED_TEXT_BYTES, MAX_SOURCE_ROWS,
                                  MAX_TOTAL_TEXT_BYTES, REQUIRED_COLUMNS, load_tsv)
+from scout_contradictions_and_supersession import (
+    MAX_ADMISSIBILITY_BYTES, MAX_ADMISSIBILITY_FILES, MAX_CLAIM_BYTES,
+    MAX_CLAIM_FILES,
+)
 
 
 SOURCE = Path(__file__).resolve().parents[2]
@@ -124,6 +128,51 @@ class ResidualMediumTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("4096 pair comparisons (4186)", result.stderr)
         self.assertEqual(corpus.read_bytes(), original_corpus)
+
+    def test_claim_count_rejects_before_sort_or_parse(self):
+        self.fixture_claims(MAX_CLAIM_FILES + 1)
+        claim = self.repo / "canon" / "candidate_claims" / SUBJECT / "claim-0001.yaml"
+        claim.write_text("not: [valid")
+        result = self.run_script("scout_contradictions_and_supersession.py")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"exceeds {MAX_CLAIM_FILES} candidate claim files", result.stderr)
+        self.assertNotIn("invalid candidate claim YAML", result.stderr)
+
+    def test_admissibility_count_rejects_before_sort_or_parse(self):
+        self.fixture_claims(MAX_ADMISSIBILITY_FILES + 1)
+        claim_dir = self.repo / "canon" / "candidate_claims" / SUBJECT
+        for claim in claim_dir.glob("claim-*.yaml"):
+            if claim.name != "claim-0001.yaml":
+                claim.unlink()
+        decision = (self.repo / "receipts" / "immutable" / SUBJECT /
+                    "admissibility-0001.yaml")
+        decision.write_text("not: [valid")
+        result = self.run_script("scout_contradictions_and_supersession.py")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            f"exceeds {MAX_ADMISSIBILITY_FILES} admissibility decision files",
+            result.stderr,
+        )
+        self.assertNotIn("invalid admissibility decision YAML", result.stderr)
+
+    def test_claim_and_admissibility_byte_quotas_precede_parsing(self):
+        claim = self.repo / "canon" / "candidate_claims" / SUBJECT / "claim-0001.yaml"
+        claim.write_bytes(b"x" * (MAX_CLAIM_BYTES + 1))
+        result = self.run_script("scout_contradictions_and_supersession.py")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"candidate claim file exceeds {MAX_CLAIM_BYTES} bytes", result.stderr)
+
+        shutil.copyfile(SOURCE / "canon" / "candidate_claims" / SUBJECT /
+                        "claim-0001.yaml", claim)
+        decision = (self.repo / "receipts" / "immutable" / SUBJECT /
+                    "admissibility-0001.yaml")
+        decision.write_bytes(b"x" * (MAX_ADMISSIBILITY_BYTES + 1))
+        result = self.run_script("scout_contradictions_and_supersession.py")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            f"admissibility decision file exceeds {MAX_ADMISSIBILITY_BYTES} bytes",
+            result.stderr,
+        )
 
     def test_output_quota_rejects_before_topology_writes(self):
         self.fixture_claims(34, alternating_polarity=True)

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
 import re
+import stat
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,9 +17,66 @@ SUPERSESSION_KIND = "PRIME_CANON_SUPERSESSION_EDGE_V1"
 RECEIPT_KIND = "PRIME_CANON_REDUCTION_DECISION_RECEIPT_V1"
 MAX_CLAIM_FILES = 256
 MAX_CLAIM_BYTES = 64 * 1024
+MAX_ADMISSIBILITY_FILES = 256
+MAX_ADMISSIBILITY_BYTES = 64 * 1024
 MAX_CLAIM_BODY_BYTES = 4096
 MAX_PAIR_COMPARISONS = 4096
 MAX_TOPOLOGY_OUTPUTS = 256
+
+
+def bounded_yaml_paths(directory: Path, prefix: str, maximum_files: int,
+                       maximum_bytes: int, label: str) -> list[Path]:
+    """Enumerate a bounded regular-file set before ordering any path names."""
+    paths: list[Path] = []
+    for path in directory.iterdir():
+        if not (path.name.startswith(prefix) and path.name.endswith(".yaml")):
+            continue
+        try:
+            info = path.stat(follow_symlinks=False)
+        except OSError as exc:
+            raise SystemExit(f"topology scout cannot inspect {label} file: {path}") from exc
+        if not stat.S_ISREG(info.st_mode):
+            raise SystemExit(f"topology scout {label} input is not a regular file: {path}")
+        if info.st_size > maximum_bytes:
+            raise SystemExit(
+                f"topology scout {label} file exceeds {maximum_bytes} bytes: {path}"
+            )
+        paths.append(path)
+        if len(paths) > maximum_files:
+            raise SystemExit(f"topology scout exceeds {maximum_files} {label} files")
+    return sorted(paths)
+
+
+def load_bounded_yaml(path: Path, maximum_bytes: int, label: str) -> dict:
+    """Read one admitted YAML input without following a replaced leaf."""
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise SystemExit(f"topology scout cannot open {label} file: {path}") from exc
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode):
+            raise SystemExit(f"topology scout {label} input is not a regular file: {path}")
+        if info.st_size > maximum_bytes:
+            raise SystemExit(
+                f"topology scout {label} file exceeds {maximum_bytes} bytes: {path}"
+            )
+        with os.fdopen(descriptor, "rb", closefd=False) as stream:
+            raw = stream.read(maximum_bytes + 1)
+        if len(raw) > maximum_bytes:
+            raise SystemExit(
+                f"topology scout {label} file exceeds {maximum_bytes} bytes: {path}"
+            )
+        try:
+            value = yaml.safe_load(raw.decode("utf-8"))
+        except (UnicodeDecodeError, yaml.YAMLError) as exc:
+            raise SystemExit(f"topology scout invalid {label} YAML: {path}") from exc
+        if not isinstance(value, dict):
+            raise SystemExit(f"topology scout {label} YAML must be an object: {path}")
+        return value
+    finally:
+        os.close(descriptor)
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -309,16 +368,18 @@ def main() -> None:
     if not corpus_index_path.exists():
         raise SystemExit(f"missing corpus index: {corpus_index_path}")
 
-    claim_files = sorted(p for p in claim_dir.glob("claim-*.yaml") if p.is_file())
-    admiss_files = sorted(p for p in admiss_dir.glob("admissibility-*.yaml") if p.is_file())
+    claim_files = bounded_yaml_paths(
+        claim_dir, "claim-", MAX_CLAIM_FILES, MAX_CLAIM_BYTES, "candidate claim"
+    )
+    admiss_files = bounded_yaml_paths(
+        admiss_dir, "admissibility-", MAX_ADMISSIBILITY_FILES,
+        MAX_ADMISSIBILITY_BYTES, "admissibility decision"
+    )
 
     if not claim_files:
         raise SystemExit(f"no candidate claim files found in {claim_dir}")
     if not admiss_files:
         raise SystemExit(f"no admissibility decision files found in {admiss_dir}")
-    if len(claim_files) > MAX_CLAIM_FILES:
-        raise SystemExit(f"topology scout exceeds {MAX_CLAIM_FILES} candidate claim files")
-
     corpus = yaml.safe_load(corpus_index_path.read_text(encoding="utf-8"))
     corpus_id = corpus["spec"]["corpus_id"]
     now = utc_now()
@@ -326,16 +387,16 @@ def main() -> None:
     admissibility_by_claim = {}
     cited_receipt_refs = []
     for path in admiss_files:
-        decision = yaml.safe_load(path.read_text(encoding="utf-8"))
+        decision = load_bounded_yaml(
+            path, MAX_ADMISSIBILITY_BYTES, "admissibility decision"
+        )
         claim_ref = decision["spec"]["target_claim_ref"]
         admissibility_by_claim[claim_ref] = decision
         cited_receipt_refs.append(decision["metadata"]["object_id"])
 
     claims = []
     for path in claim_files:
-        if path.stat().st_size > MAX_CLAIM_BYTES:
-            raise SystemExit(f"topology scout claim file exceeds {MAX_CLAIM_BYTES} bytes: {path}")
-        claim = yaml.safe_load(path.read_text(encoding="utf-8"))
+        claim = load_bounded_yaml(path, MAX_CLAIM_BYTES, "candidate claim")
         if admissibility_passed(admissibility_by_claim.get(claim["spec"]["claim_id"], {})):
             if len(claim["spec"]["normalized_claim_body"].encode("utf-8")) > MAX_CLAIM_BODY_BYTES:
                 raise SystemExit(f"topology scout claim body exceeds {MAX_CLAIM_BODY_BYTES} bytes: {path}")
