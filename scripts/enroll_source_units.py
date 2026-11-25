@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import os
+import stat
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,10 +22,18 @@ REQUIRED_COLUMNS = [
     "normalized_text",
 ]
 
+MAX_TSV_BYTES = 2 * 1024 * 1024
+MAX_SOURCE_ROWS = 256
+MAX_NORMALIZED_TEXT_BYTES = 4096
+MAX_TOTAL_TEXT_BYTES = 512 * 1024
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 def load_tsv(path: Path):
+    info = path.stat()
+    if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_TSV_BYTES:
+        raise SystemExit(f"TSV must be a regular file of at most {MAX_TSV_BYTES} bytes: {path}")
     with path.open("r", encoding="utf-8", newline="") as fh:
         reader = csv.DictReader(fh, delimiter="\t")
         if reader.fieldnames is None:
@@ -33,6 +42,7 @@ def load_tsv(path: Path):
         if missing:
             raise SystemExit(f"TSV missing required columns {missing}: {path}")
         rows = []
+        total_text_bytes = 0
         for idx, row in enumerate(reader, start=2):
             if not any((row.get(k) or "").strip() for k in row.keys()):
                 continue
@@ -40,6 +50,14 @@ def load_tsv(path: Path):
             for col in REQUIRED_COLUMNS:
                 if not clean.get(col):
                     raise SystemExit(f"{path}:{idx}: missing required value for {col}")
+            if len(rows) >= MAX_SOURCE_ROWS:
+                raise SystemExit(f"TSV exceeds {MAX_SOURCE_ROWS} source rows: {path}")
+            text_bytes = len(clean["normalized_text"].encode("utf-8"))
+            if text_bytes > MAX_NORMALIZED_TEXT_BYTES:
+                raise SystemExit(f"{path}:{idx}: normalized_text exceeds {MAX_NORMALIZED_TEXT_BYTES} bytes")
+            total_text_bytes += text_bytes
+            if total_text_bytes > MAX_TOTAL_TEXT_BYTES:
+                raise SystemExit(f"TSV normalized_text exceeds {MAX_TOTAL_TEXT_BYTES} aggregate bytes: {path}")
             rows.append(clean)
         if not rows:
             raise SystemExit(f"No source rows found in {path}")
