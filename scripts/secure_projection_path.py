@@ -50,7 +50,25 @@ def rendered_directory(repo: Path, *, create: bool = False) -> int:
 def stage_directory(stage_root: Path) -> int:
     if not stage_root.is_absolute() or ".." in stage_root.parts:
         raise PromotionRejected("stage root must be an absolute non-escaping path")
-    return _open_directories(Path("/"), tuple(stage_root.parts[1:]))
+    components = tuple(stage_root.parts[1:])
+    fd = os.open("/", DIR_FLAGS)
+    try:
+        for index, component in enumerate(components):
+            if component in ("", ".", "..") or "/" in component:
+                raise PromotionRejected("unsafe stage directory component")
+            next_fd = os.open(component, DIR_FLAGS, dir_fd=fd)
+            os.close(fd)
+            fd = next_fd
+            info = os.fstat(fd)
+            root_sticky_ancestor = (index < len(components) - 1 and info.st_uid == 0
+                                    and bool(info.st_mode & stat.S_ISVTX))
+            if (info.st_uid not in (0, os.geteuid())
+                    or (info.st_mode & 0o022 and not root_sticky_ancestor)):
+                raise PromotionRejected("unsafe stage directory owner or permissions")
+        return fd
+    except BaseException:
+        os.close(fd)
+        raise
 
 
 def read_rendered(repo: Path, subject: str) -> bytes:
