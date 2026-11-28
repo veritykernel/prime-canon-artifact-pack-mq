@@ -248,6 +248,18 @@ class VerifiedPublicationTests(unittest.TestCase):
         self.assertEqual(publish(self.repo, SUBJECT, stage_root=self.stage), self.target)
         self.assertEqual(self.target.read_bytes(), (self.repo / "views" / "rendered" / f"{SUBJECT}.md").read_bytes())
 
+    def test_group_writable_stage_or_ancestor_rejects_publication(self):
+        for directory in (self.stage, self.root):
+            with self.subTest(directory=directory):
+                original_mode = directory.stat().st_mode & 0o7777
+                directory.chmod(original_mode | 0o020)
+                try:
+                    with self.assertRaisesRegex(PromotionRejected, "unsafe stage directory"):
+                        publish(self.repo, SUBJECT, stage_root=self.stage)
+                    self.assertFalse(self.target.exists())
+                finally:
+                    directory.chmod(original_mode)
+
     def test_changed_render_cannot_replace_existing_publication(self):
         self.target.write_text("prior publication")
         source = self.repo / "views" / "rendered" / f"{SUBJECT}.md"
