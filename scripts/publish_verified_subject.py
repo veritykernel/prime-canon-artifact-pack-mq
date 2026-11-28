@@ -5,31 +5,15 @@ from __future__ import annotations
 
 import hashlib
 import os
-import secrets
-import stat
 import sys
 from pathlib import Path
 
 from promotion_preflight import PromotionRejected, SUBJECT, _yaml
-
-MAX_RENDER = 16 * 1024 * 1024
-
-
-def read_render(repo: Path, source: Path) -> bytes:
-    if source.is_symlink() or not source.resolve().is_relative_to(repo):
-        raise PromotionRejected("rendered source is a symlink or escapes repository")
-    fd = os.open(source, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
-    with os.fdopen(fd, "rb") as stream:
-        info = os.fstat(stream.fileno())
-        if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_RENDER:
-            raise PromotionRejected("rendered source is not a bounded regular file")
-        raw = stream.read(MAX_RENDER + 1)
-    if len(raw) > MAX_RENDER:
-        raise PromotionRejected("rendered source exceeds size limit")
-    return raw
+from render_binding import compute_view_hash
+from secure_projection_path import DEFAULT_STAGE_ROOT, read_rendered, replace_regular, stage_directory
 
 
-def publish(repo: Path, subject: str) -> Path:
+def publish(repo: Path, subject: str, *, stage_root: Path = DEFAULT_STAGE_ROOT) -> Path:
     repo = repo.resolve()
     if not SUBJECT.fullmatch(subject):
         raise PromotionRejected("invalid subject slug")
@@ -42,49 +26,35 @@ def publish(repo: Path, subject: str) -> Path:
     spec = execution["spec"]
     drift_spec = drift["spec"]
     view_spec = view["spec"]
+    try:
+        actual_view_hash = compute_view_hash(repo, subject, view)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise PromotionRejected(f"current render inputs could not be verified: {exc}") from exc
     if (spec.get("output_ref") != expected_ref or drift_spec.get("output_ref") != expected_ref
             or spec.get("target_view_ref") != view_spec.get("view_id")
             or drift_spec.get("target_view_ref") != view_spec.get("view_id")
             or drift_spec.get("current_view_hash") != view_spec.get("view_hash")
+            or spec.get("render_view_hash") != view_spec.get("view_hash")
+            or actual_view_hash != view_spec.get("view_hash")
+            or not isinstance(spec.get("render_view_hash"), str)
             or drift_spec.get("output_sha256") != spec.get("output_sha256")
             or drift_spec.get("drift_status") != "in_sync"
             or drift_spec.get("blocker") is not False
             or drift_spec.get("recommended_route") != "export_prep"):
         raise PromotionRejected("render receipts and current view do not authorize these exact bytes")
-    source = repo / expected_ref
-    raw = read_render(repo, source)
+    raw = read_rendered(repo, subject)
     if hashlib.sha256(raw).hexdigest() != spec.get("output_sha256"):
         raise PromotionRejected("rendered source bytes differ from execution receipt")
     target_value = cfg.get("subjects", {}).get(subject, {}).get("rendered_markdown_path")
     if not isinstance(target_value, str) or not target_value:
         raise PromotionRejected("missing publish target")
     target = Path(target_value)
-    if not target.is_absolute() or target.name != f"{subject}.rendered.md":
-        raise PromotionRejected("publish target must be the configured absolute subject file")
-    if target.is_symlink():
-        raise PromotionRejected("publish target is a symlink")
-    if not target.parent.is_dir() or target.parent.is_symlink():
-        raise PromotionRejected("publish target directory is absent or a symlink")
-    directory_fd = os.open(target.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0))
+    expected_target = stage_root / f"{subject}.rendered.md"
+    if target.parts != expected_target.parts or ".." in target.parts:
+        raise PromotionRejected("publish target must be inside the trusted stage root")
+    directory_fd = stage_directory(stage_root)
     try:
-        if not stat.S_ISDIR(os.fstat(directory_fd).st_mode):
-            raise PromotionRejected("publish target parent is not a directory")
-        temp_name = f".{subject}.rendered.{secrets.token_hex(12)}.tmp"
-        temp_fd = os.open(temp_name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
-                          0o644, dir_fd=directory_fd)
-        try:
-            with os.fdopen(temp_fd, "wb") as stream:
-                stream.write(raw)
-                stream.flush()
-                os.fsync(stream.fileno())
-            # Both pathnames are relative to the same already-open directory.
-            # Replace never follows a destination symlink introduced by a race.
-            os.replace(temp_name, target.name, src_dir_fd=directory_fd, dst_dir_fd=directory_fd)
-        finally:
-            try:
-                os.unlink(temp_name, dir_fd=directory_fd)
-            except FileNotFoundError:
-                pass
+        replace_regular(directory_fd, target.name, raw)
     finally:
         os.close(directory_fd)
     return target

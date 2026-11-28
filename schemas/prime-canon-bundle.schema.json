@@ -12400,6 +12400,10 @@
               "type": "string",
               "pattern": "^[a-f0-9]{64}$"
             },
+            "render_view_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
             "rendered_node_count": {
               "type": "integer",
               "minimum": 0
